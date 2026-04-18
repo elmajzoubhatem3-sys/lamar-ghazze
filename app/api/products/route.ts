@@ -20,7 +20,10 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch products" },
+      {
+        error: "Failed to fetch products",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -52,7 +55,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("POST /api/products error:", error);
     return NextResponse.json(
-      { error: "Failed to create product" },
+      {
+        error: "Failed to create product",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

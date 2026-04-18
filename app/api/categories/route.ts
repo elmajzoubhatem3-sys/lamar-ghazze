@@ -7,12 +7,14 @@ export async function GET() {
       SELECT * FROM categories
       ORDER BY sort_order ASC, id DESC
     `;
-
     return NextResponse.json(categories);
   } catch (error) {
     console.error("GET /api/categories error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch categories" },
+      {
+        error: "Failed to fetch categories",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -41,7 +43,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("POST /api/categories error:", error);
     return NextResponse.json(
-      { error: "Failed to create category" },
+      {
+        error: "Failed to create category",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
