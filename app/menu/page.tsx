@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 type Category = {
   id: number;
@@ -49,6 +48,16 @@ export default function MenuPage() {
     loadData();
   }, []);
 
+  const scrollToCategory = (categoryId: number) => {
+    const element = document.getElementById(`category-${categoryId}`);
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
@@ -58,19 +67,24 @@ export default function MenuPage() {
       <div className="absolute inset-0 bg-black/70" />
 
       <div className="relative z-10 px-3 py-4 md:px-4">
-        <div className="sticky top-3 z-30 mb-6">
+        <div className="sticky top-3 z-30 mb-6 space-y-3">
           <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-4 backdrop-blur-2xl shadow-xl">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold md:text-3xl">
-                Lamar Caffe
-              </h1>
+            <h1 className="text-2xl font-semibold md:text-3xl">
+              Lamar Caffe
+            </h1>
+          </div>
 
-              <Link
-                href="/"
-                className="rounded-full bg-white px-4 py-2 text-sm text-black"
-              >
-                Home
-              </Link>
+          <div className="rounded-2xl border border-white/10 bg-white/10 p-2 backdrop-blur-2xl shadow-xl">
+            <div className="flex gap-2 overflow-x-auto">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => scrollToCategory(Number(category.id))}
+                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-xl transition hover:bg-white/20"
+                >
+                  {category.name}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -89,26 +103,11 @@ export default function MenuPage() {
               return (
                 <section
                   key={category.id}
-                  className="rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
+                  id={`category-${category.id}`}
+                  className="scroll-mt-36 rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
                 >
-                  <div className="mb-4 overflow-hidden rounded-2xl border border-white/10">
-                    <div
-                      className="absolute"
-                      aria-hidden="true"
-                    />
-                    <div
-                      className="relative overflow-hidden rounded-2xl"
-                    >
-                      <div
-                        className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
-                        style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
-                      />
-                      <div className="absolute inset-0 bg-black/60" />
-
-                      <h2 className="relative z-10 px-5 py-4 text-2xl font-semibold">
-                        {category.name}
-                      </h2>
-                    </div>
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-semibold">{category.name}</h2>
                   </div>
 
                   {categoryProducts.length === 0 ? (
