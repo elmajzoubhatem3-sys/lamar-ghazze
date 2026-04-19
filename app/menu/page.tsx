@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type Category = {
@@ -20,14 +20,13 @@ type Product = {
 export default function MenuPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [activeCategory, setActiveCategory] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/products"),
+          fetch("/api/categories", { cache: "no-store" }),
+          fetch("/api/products", { cache: "no-store" }),
         ]);
 
         const catData = await catRes.json();
@@ -36,12 +35,12 @@ export default function MenuPage() {
         const safeCategories = Array.isArray(catData) ? catData : [];
         const safeProducts = Array.isArray(prodData) ? prodData : [];
 
-        setCategories(safeCategories);
-        setProducts(safeProducts);
+        const sortedCategories = [...safeCategories].sort(
+          (a, b) => Number(a.sort_order) - Number(b.sort_order)
+        );
 
-        if (safeCategories.length > 0) {
-          setActiveCategory(Number(safeCategories[0].id));
-        }
+        setCategories(sortedCategories);
+        setProducts(safeProducts);
       } catch (error) {
         console.error("Failed to load menu data:", error);
       }
@@ -49,14 +48,6 @@ export default function MenuPage() {
 
     loadData();
   }, []);
-
-  const activeCategoryName = useMemo(() => {
-    return categories.find((c) => Number(c.id) === activeCategory)?.name || "";
-  }, [categories, activeCategory]);
-
-  const activeItems = useMemo(() => {
-    return products.filter((item) => Number(item.category_id) === activeCategory);
-  }, [products, activeCategory]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -66,11 +57,13 @@ export default function MenuPage() {
       />
       <div className="absolute inset-0 bg-black/70" />
 
-      <div className="relative z-10 px-3 py-4">
-        <div className="sticky top-3 z-30 space-y-3">
+      <div className="relative z-10 px-3 py-4 md:px-4">
+        <div className="sticky top-3 z-30 mb-6">
           <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-4 backdrop-blur-2xl shadow-xl">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold">Lamar Ghazze</h1>
+              <h1 className="text-2xl font-semibold md:text-3xl">
+                Lamar Caffe
+              </h1>
 
               <Link
                 href="/"
@@ -80,78 +73,85 @@ export default function MenuPage() {
               </Link>
             </div>
           </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-2 backdrop-blur-2xl">
-            <div className="flex gap-2 overflow-x-auto">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(Number(cat.id))}
-                  className={`rounded-full px-4 py-2 text-sm backdrop-blur-xl ${
-                    Number(activeCategory) === Number(cat.id)
-                      ? "bg-amber-300/20 text-amber-200"
-                      : "bg-white/10 text-white"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <div className="mt-6">
-          <div className="mb-4">
-            <div className="relative overflow-hidden rounded-2xl border border-white/10">
-              <div
-                className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
-                style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
-              />
-              <div className="absolute inset-0 bg-black/60" />
-
-              <h2 className="relative z-10 px-5 py-4 text-2xl font-semibold">
-                {activeCategoryName || "Menu"}
-              </h2>
-            </div>
-          </div>
-
-          {activeItems.length === 0 ? (
+        <div className="space-y-6">
+          {categories.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-white/10 p-6 text-center backdrop-blur-xl">
-              No products yet
+              No categories yet
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-5">
-              {activeItems.map((item) => (
-                <div key={item.id}>
-                  {item.image_url ? (
-                    <div className="overflow-hidden rounded-2xl border border-white/10">
-                      <div className="aspect-square">
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
+            categories.map((category) => {
+              const categoryProducts = products.filter(
+                (product) => Number(product.category_id) === Number(category.id)
+              );
+
+              return (
+                <section
+                  key={category.id}
+                  className="rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
+                >
+                  <div className="mb-4 overflow-hidden rounded-2xl border border-white/10">
+                    <div
+                      className="absolute"
+                      aria-hidden="true"
+                    />
+                    <div
+                      className="relative overflow-hidden rounded-2xl"
+                    >
+                      <div
+                        className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
+                        style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
+                      />
+                      <div className="absolute inset-0 bg-black/60" />
+
+                      <h2 className="relative z-10 px-5 py-4 text-2xl font-semibold">
+                        {category.name}
+                      </h2>
+                    </div>
+                  </div>
+
+                  {categoryProducts.length === 0 ? (
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center text-sm text-neutral-300">
+                      No products in this category yet
                     </div>
                   ) : (
-                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                      <div className="aspect-square flex items-center justify-center text-sm text-neutral-400">
-                        No Image
-                      </div>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-3">
+                      {categoryProducts.map((item) => (
+                        <div key={item.id}>
+                          {item.image_url ? (
+                            <div className="overflow-hidden rounded-2xl border border-white/10">
+                              <div className="aspect-square">
+                                <img
+                                  src={item.image_url}
+                                  alt={item.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                              <div className="flex aspect-square items-center justify-center text-sm text-neutral-400">
+                                No Image
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-2">
+                            <h3 className="text-sm font-semibold leading-tight md:text-base">
+                              {item.name}
+                            </h3>
+                            <p className="text-sm leading-tight text-amber-200 md:text-base">
+                              {Number(item.price_lbp).toLocaleString("en-US")} L.L
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
-
-                  <div className="mt-2">
-                    <h3 className="text-sm font-semibold leading-tight">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-amber-200 leading-tight">
-                      {Number(item.price_lbp).toLocaleString("en-US")} ل.ل
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                </section>
+              );
+            })
           )}
         </div>
       </div>
