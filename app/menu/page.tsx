@@ -72,20 +72,21 @@ export default function MenuPage() {
             <h1 className="text-2xl font-semibold md:text-3xl">
               Lamar Caffe
             </h1>
+            <p className="mt-2 text-sm text-neutral-200 md:text-base">
+              Fresh meals, beautiful presentation, and a premium dining vibe.
+            </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-2 backdrop-blur-2xl shadow-xl">
-            <div className="flex gap-2 overflow-x-auto">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => scrollToCategory(Number(category.id))}
-                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-xl transition hover:bg-white/20"
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+          <div className="flex gap-2 overflow-x-auto">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => scrollToCategory(Number(category.id))}
+                className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-2xl transition hover:bg-white/20"
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
         </div>
 
