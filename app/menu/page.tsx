@@ -51,15 +51,19 @@ export default function MenuPage() {
   const scrollToCategory = (categoryId: number) => {
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      element.scrollIntoView({
+      const yOffset = -170;
+      const y =
+        element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+      window.scrollTo({
+        top: y,
         behavior: "smooth",
-        block: "start",
       });
     }
   };
 
   return (
-    <main className="relative min-h-screen bg-black text-white">
+    <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
         className="absolute inset-0 bg-cover bg-center scale-110 blur-md"
         style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
@@ -67,24 +71,23 @@ export default function MenuPage() {
       <div className="absolute inset-0 bg-black/70" />
 
       <div className="relative z-10 px-3 py-4 md:px-4">
-        {/* STICKY WRAPPER واحد فقط */}
-        <div className="sticky top-3 z-40 mb-6 space-y-3">
-          <div className="rounded-3xl border border-white/10 bg-black/35 px-5 py-4 backdrop-blur-2xl shadow-xl">
-            <h1 className="text-2xl font-semibold md:text-3xl">
-              Lamar Caffe
-            </h1>
-            <p className="mt-2 text-sm text-neutral-200 md:text-base">
-              Fresh meals, beautiful presentation, and a premium dining vibe.
-            </p>
-          </div>
+        <div className="sticky top-3 z-40 mb-6">
+          <div className="space-y-3 rounded-3xl border border-white/10 bg-white/10 px-5 py-4 backdrop-blur-2xl shadow-xl">
+            <div>
+              <h1 className="text-2xl font-semibold md:text-3xl">
+                Lamar Caffe
+              </h1>
+              <p className="mt-2 text-sm text-neutral-200 md:text-base">
+                Fresh meals, beautiful presentation, and a premium dining vibe.
+              </p>
+            </div>
 
-          <div className="bg-black/35 backdrop-blur-2xl rounded-2xl p-1">
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {categories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => scrollToCategory(Number(category.id))}
-                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/20"
+                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-xl transition hover:bg-white/20"
                 >
                   {category.name}
                 </button>
@@ -108,7 +111,7 @@ export default function MenuPage() {
                 <section
                   key={category.id}
                   id={`category-${category.id}`}
-                  className="scroll-mt-52 rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
+                  className="rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
                 >
                   <div className="mb-4">
                     <h2 className="text-2xl font-semibold">{category.name}</h2>
