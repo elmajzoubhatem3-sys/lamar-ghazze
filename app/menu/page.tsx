@@ -59,7 +59,7 @@ export default function MenuPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main className="relative min-h-screen bg-black text-white">
       <div
         className="absolute inset-0 bg-cover bg-center scale-110 blur-md"
         style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
@@ -67,8 +67,9 @@ export default function MenuPage() {
       <div className="absolute inset-0 bg-black/70" />
 
       <div className="relative z-10 px-3 py-4 md:px-4">
-        <div className="sticky top-3 z-40 mb-3">
-          <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-4 backdrop-blur-2xl shadow-xl">
+        {/* STICKY WRAPPER واحد فقط */}
+        <div className="sticky top-3 z-40 mb-6 space-y-3">
+          <div className="rounded-3xl border border-white/10 bg-black/35 px-5 py-4 backdrop-blur-2xl shadow-xl">
             <h1 className="text-2xl font-semibold md:text-3xl">
               Lamar Caffe
             </h1>
@@ -76,23 +77,23 @@ export default function MenuPage() {
               Fresh meals, beautiful presentation, and a premium dining vibe.
             </p>
           </div>
-        </div>
 
-        <div className="sticky top-[122px] z-30 mb-6 bg-black/20 py-1 backdrop-blur-xl">
-          <div className="flex gap-2 overflow-x-auto">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => scrollToCategory(Number(category.id))}
-                className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-2xl transition hover:bg-white/20"
-              >
-                {category.name}
-              </button>
-            ))}
+          <div className="bg-black/35 backdrop-blur-2xl rounded-2xl p-1">
+            <div className="flex gap-2 overflow-x-auto">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => scrollToCategory(Number(category.id))}
+                  className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/20"
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6 pt-1">
+        <div className="space-y-6">
           {categories.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-white/10 p-6 text-center backdrop-blur-xl">
               No categories yet
@@ -107,7 +108,7 @@ export default function MenuPage() {
                 <section
                   key={category.id}
                   id={`category-${category.id}`}
-                  className="scroll-mt-44 rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
+                  className="scroll-mt-52 rounded-3xl border border-white/10 bg-white/10 p-3 backdrop-blur-2xl shadow-xl md:p-4"
                 >
                   <div className="mb-4">
                     <h2 className="text-2xl font-semibold">{category.name}</h2>
