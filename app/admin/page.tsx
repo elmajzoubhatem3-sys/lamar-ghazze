@@ -13,6 +13,8 @@ type Product = {
   id: number;
   name: string;
   name_en?: string;
+  description?: string;
+  description_en?: string;
   price_lbp: number;
   image_url: string;
   category_id: number;
@@ -24,6 +26,7 @@ type Settings = {
   header_type: "text" | "banner";
   header_title: string;
   header_subtitle: string;
+  header_subtitle_en?: string;
   header_banner_url: string;
   header_banner_urls?: string;
 };
@@ -38,6 +41,8 @@ export default function AdminPage() {
 
   const [productName, setProductName] = useState("");
   const [productNameEn, setProductNameEn] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productDescriptionEn, setProductDescriptionEn] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productCategory, setProductCategory] = useState("");
   const [productSort, setProductSort] = useState("0");
@@ -45,9 +50,8 @@ export default function AdminPage() {
 
   const [headerType, setHeaderType] = useState<"text" | "banner">("text");
   const [headerTitle, setHeaderTitle] = useState("Lamar Caffe");
-  const [headerSubtitle, setHeaderSubtitle] = useState(
-    "Fresh meals, beautiful presentation, and a premium dining vibe."
-  );
+  const [headerSubtitle, setHeaderSubtitle] = useState("");
+  const [headerSubtitleEn, setHeaderSubtitleEn] = useState("");
   const [headerBannerFiles, setHeaderBannerFiles] = useState<File[]>([]);
   const [headerBannerUrls, setHeaderBannerUrls] = useState<string[]>([]);
 
@@ -59,6 +63,8 @@ export default function AdminPage() {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editingProductName, setEditingProductName] = useState("");
   const [editingProductNameEn, setEditingProductNameEn] = useState("");
+  const [editingProductDescription, setEditingProductDescription] = useState("");
+  const [editingProductDescriptionEn, setEditingProductDescriptionEn] = useState("");
   const [editingProductPrice, setEditingProductPrice] = useState("");
   const [editingProductCategory, setEditingProductCategory] = useState("");
   const [editingProductSort, setEditingProductSort] = useState("0");
@@ -102,10 +108,8 @@ export default function AdminPage() {
     if (settingsData) {
       setHeaderType(settingsData.header_type || "text");
       setHeaderTitle(settingsData.header_title || "Lamar Caffe");
-      setHeaderSubtitle(
-        settingsData.header_subtitle ||
-          "Fresh meals, beautiful presentation, and a premium dining vibe."
-      );
+      setHeaderSubtitle(settingsData.header_subtitle || "");
+      setHeaderSubtitleEn(settingsData.header_subtitle_en || "");
 
       try {
         setHeaderBannerUrls(
@@ -151,6 +155,7 @@ export default function AdminPage() {
           header_type: headerType,
           header_title: headerTitle,
           header_subtitle: headerSubtitle,
+          header_subtitle_en: headerSubtitleEn,
           header_banner_url: urls[0] || "",
           header_banner_urls: JSON.stringify(urls),
         }),
@@ -214,6 +219,8 @@ export default function AdminPage() {
           category_id: Number(productCategory),
           name: productName,
           name_en: productNameEn,
+          description: productDescription,
+          description_en: productDescriptionEn,
           price_lbp: Number(productPrice),
           image_url,
           sort_order: Number(productSort || 0),
@@ -229,6 +236,8 @@ export default function AdminPage() {
 
       setProductName("");
       setProductNameEn("");
+      setProductDescription("");
+      setProductDescriptionEn("");
       setProductPrice("");
       setProductSort("0");
       setProductImageFile(null);
@@ -287,6 +296,8 @@ export default function AdminPage() {
     setEditingProductId(product.id);
     setEditingProductName(product.name);
     setEditingProductNameEn(product.name_en || "");
+    setEditingProductDescription(product.description || "");
+    setEditingProductDescriptionEn(product.description_en || "");
     setEditingProductPrice(String(product.price_lbp));
     setEditingProductCategory(String(product.category_id));
     setEditingProductSort(String(product.sort_order || 0));
@@ -309,6 +320,8 @@ export default function AdminPage() {
         body: JSON.stringify({
           name: editingProductName,
           name_en: editingProductNameEn,
+          description: editingProductDescription,
+          description_en: editingProductDescriptionEn,
           price_lbp: Number(editingProductPrice),
           category_id: Number(editingProductCategory),
           sort_order: Number(editingProductSort || 0),
@@ -377,7 +390,14 @@ export default function AdminPage() {
             <input
               value={headerSubtitle}
               onChange={(e) => setHeaderSubtitle(e.target.value)}
-              placeholder="Header subtitle"
+              placeholder="Arabic header subtitle"
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+            />
+
+            <input
+              value={headerSubtitleEn}
+              onChange={(e) => setHeaderSubtitleEn(e.target.value)}
+              placeholder="English header subtitle"
               className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
             />
 
@@ -472,6 +492,20 @@ export default function AdminPage() {
                 value={productNameEn}
                 onChange={(e) => setProductNameEn(e.target.value)}
                 placeholder="English product name"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              />
+              <textarea
+                value={productDescription}
+                onChange={(e) => setProductDescription(e.target.value)}
+                placeholder="Arabic product description"
+                rows={3}
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              />
+              <textarea
+                value={productDescriptionEn}
+                onChange={(e) => setProductDescriptionEn(e.target.value)}
+                placeholder="English product description"
+                rows={3}
                 className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
               />
               <input
@@ -587,6 +621,18 @@ export default function AdminPage() {
                         onChange={(e) => setEditingProductNameEn(e.target.value)}
                         className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
                       />
+                      <textarea
+                        value={editingProductDescription}
+                        onChange={(e) => setEditingProductDescription(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                      />
+                      <textarea
+                        value={editingProductDescriptionEn}
+                        onChange={(e) => setEditingProductDescriptionEn(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                      />
                       <input
                         value={editingProductPrice}
                         onChange={(e) => setEditingProductPrice(e.target.value)}
@@ -626,7 +672,7 @@ export default function AdminPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name} className="h-16 w-16 rounded-xl object-cover" />
                       ) : (
@@ -637,6 +683,12 @@ export default function AdminPage() {
                       <div className="flex-1">
                         <p className="font-medium">{product.name}</p>
                         <p className="text-sm text-neutral-300">{product.name_en || "No English name"}</p>
+                        {product.description && (
+                          <p className="text-xs text-neutral-400">{product.description}</p>
+                        )}
+                        {product.description_en && (
+                          <p className="text-xs text-neutral-500">{product.description_en}</p>
+                        )}
                         <p className="text-sm text-amber-200">{Number(product.price_lbp).toLocaleString("en-US")} L.L</p>
                         <p className="text-xs text-neutral-400">Sort: {product.sort_order}</p>
                       </div>

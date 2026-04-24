@@ -15,6 +15,8 @@ type Product = {
   id: number;
   name: string;
   name_en?: string;
+  description?: string;
+  description_en?: string;
   price_lbp: number;
   image_url: string;
   category_id: number;
@@ -25,6 +27,7 @@ type Settings = {
   header_type: "text" | "banner";
   header_title: string;
   header_subtitle: string;
+  header_subtitle_en?: string;
   header_banner_url: string;
   header_banner_urls?: string;
 };
@@ -35,6 +38,7 @@ export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("menu_language") as Language | null;
@@ -80,6 +84,30 @@ export default function MenuPage() {
     loadData();
   }, []);
 
+  let bannerUrls: string[] = [];
+
+  try {
+    bannerUrls = settings?.header_banner_urls
+      ? JSON.parse(settings.header_banner_urls)
+      : settings?.header_banner_url
+      ? [settings.header_banner_url]
+      : [];
+  } catch {
+    bannerUrls = [];
+  }
+
+  useEffect(() => {
+    if (bannerUrls.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveBannerIndex((prev) =>
+        prev === bannerUrls.length - 1 ? 0 : prev + 1
+      );
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [bannerUrls.length]);
+
   const chooseLanguage = (lang: Language) => {
     localStorage.setItem("menu_language", lang);
     setLanguage(lang);
@@ -97,6 +125,11 @@ export default function MenuPage() {
     return product.name;
   };
 
+  const displayProductDescription = (product: Product) => {
+    if (language === "en") return product.description_en || product.description || "";
+    return product.description || "";
+  };
+
   const scrollToCategory = (categoryId: number) => {
     setActiveCategoryId(categoryId);
 
@@ -112,24 +145,13 @@ export default function MenuPage() {
     }
   };
 
-  let bannerUrls: string[] = [];
-
-  try {
-    bannerUrls = settings?.header_banner_urls
-      ? JSON.parse(settings.header_banner_urls)
-      : settings?.header_banner_url
-      ? [settings.header_banner_url]
-      : [];
-  } catch {
-    bannerUrls = [];
-  }
-
   const hasLanguage = language === "ar" || language === "en";
 
   const headerTitle = settings?.header_title || "Lamar Caffe";
   const headerSubtitle =
-    settings?.header_subtitle ||
-    "Fresh meals, beautiful presentation, and a premium dining vibe.";
+    language === "en"
+      ? settings?.header_subtitle_en || settings?.header_subtitle || ""
+      : settings?.header_subtitle || "";
 
   return (
     <main dir={direction} className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -166,28 +188,23 @@ export default function MenuPage() {
       <div className="relative z-10 px-3 py-4 md:px-4">
         <header className="mb-3">
           {settings?.header_type === "banner" && bannerUrls.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3">
-              {bannerUrls.map((url) => (
-                <div
-                  key={url}
-                  className="overflow-hidden rounded-3xl border border-white/10 shadow-xl"
-                >
-                  <img
-                    src={url}
-                    alt="Menu banner"
-                    className="h-40 w-full object-cover md:h-60"
-                  />
-                </div>
-              ))}
+            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-xl">
+              <img
+                src={bannerUrls[activeBannerIndex]}
+                alt="Menu banner"
+                className="h-40 w-full object-cover transition-all duration-700 md:h-60"
+              />
             </div>
           ) : (
             <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-4 shadow-xl backdrop-blur-2xl">
               <h1 className="text-2xl font-semibold md:text-3xl">
                 {headerTitle}
               </h1>
-              <p className="mt-2 text-sm text-neutral-200 md:text-base">
-                {headerSubtitle}
-              </p>
+              {headerSubtitle && (
+                <p className="mt-2 text-sm text-neutral-200 md:text-base">
+                  {headerSubtitle}
+                </p>
+              )}
             </div>
           )}
         </header>
@@ -239,36 +256,47 @@ export default function MenuPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-3">
-                      {categoryProducts.map((item) => (
-                        <div key={item.id}>
-                          {item.image_url ? (
-                            <div className="overflow-hidden rounded-2xl border border-white/10">
-                              <div className="aspect-square">
-                                <img
-                                  src={item.image_url}
-                                  alt={displayProductName(item)}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                              <div className="flex aspect-square items-center justify-center text-sm text-neutral-400">
-                                No Image
-                              </div>
-                            </div>
-                          )}
+                      {categoryProducts.map((item) => {
+                        const description = displayProductDescription(item);
 
-                          <div className="mt-2">
-                            <h3 className="text-sm font-semibold leading-tight md:text-base">
-                              {displayProductName(item)}
-                            </h3>
-                            <p className="text-sm leading-tight text-amber-200 md:text-base">
-                              {Number(item.price_lbp).toLocaleString("en-US")} L.L
-                            </p>
+                        return (
+                          <div key={item.id}>
+                            {item.image_url ? (
+                              <div className="overflow-hidden rounded-2xl border border-white/10">
+                                <div className="aspect-square">
+                                  <img
+                                    src={item.image_url}
+                                    alt={displayProductName(item)}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                                <div className="flex aspect-square items-center justify-center text-sm text-neutral-400">
+                                  No Image
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="mt-2">
+                              <h3 className="text-sm font-semibold leading-tight md:text-base">
+                                {displayProductName(item)}
+                              </h3>
+
+                              {description && (
+                                <p className="mt-1 text-xs leading-tight text-neutral-300 md:text-sm">
+                                  {description}
+                                </p>
+                              )}
+
+                              <p className="mt-1 text-sm leading-tight text-amber-200 md:text-base">
+                                {Number(item.price_lbp).toLocaleString("en-US")} L.L
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </section>

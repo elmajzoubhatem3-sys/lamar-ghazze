@@ -8,6 +8,8 @@ export async function GET() {
         products.id,
         products.name,
         products.name_en,
+        products.description,
+        products.description_en,
         products.price_lbp,
         products.image_url,
         products.category_id,
@@ -23,7 +25,10 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch products", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to fetch products",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -36,6 +41,8 @@ export async function POST(req: Request) {
     const category_id = Number(body?.category_id);
     const name = body?.name?.trim();
     const name_en = body?.name_en?.trim() || "";
+    const description = body?.description?.trim() || "";
+    const description_en = body?.description_en?.trim() || "";
     const price_lbp = Number(body?.price_lbp);
     const image_url = body?.image_url?.trim() || "";
     const sort_order = Number(body?.sort_order ?? 0);
@@ -48,8 +55,10 @@ export async function POST(req: Request) {
     }
 
     const inserted = await sql`
-      INSERT INTO products (category_id, name, name_en, price_lbp, image_url, sort_order)
-      VALUES (${category_id}, ${name}, ${name_en}, ${price_lbp}, ${image_url}, ${sort_order})
+      INSERT INTO products
+      (category_id, name, name_en, description, description_en, price_lbp, image_url, sort_order)
+      VALUES
+      (${category_id}, ${name}, ${name_en}, ${description}, ${description_en}, ${price_lbp}, ${image_url}, ${sort_order})
       RETURNING *
     `;
 
@@ -57,7 +66,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("POST /api/products error:", error);
     return NextResponse.json(
-      { error: "Failed to create product", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to create product",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

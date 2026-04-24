@@ -11,6 +11,8 @@ export async function PATCH(
 
     const name = body?.name?.trim();
     const name_en = body?.name_en?.trim() || "";
+    const description = body?.description?.trim() || "";
+    const description_en = body?.description_en?.trim() || "";
     const price_lbp = Number(body?.price_lbp);
     const category_id = Number(body?.category_id);
     const sort_order = Number(body?.sort_order ?? 0);
@@ -29,6 +31,8 @@ export async function PATCH(
         SET
           name = ${name},
           name_en = ${name_en},
+          description = ${description},
+          description_en = ${description_en},
           price_lbp = ${price_lbp},
           category_id = ${category_id},
           sort_order = ${sort_order},
@@ -45,6 +49,8 @@ export async function PATCH(
       SET
         name = ${name},
         name_en = ${name_en},
+        description = ${description},
+        description_en = ${description_en},
         price_lbp = ${price_lbp},
         category_id = ${category_id},
         sort_order = ${sort_order}
@@ -56,7 +62,10 @@ export async function PATCH(
   } catch (error) {
     console.error("PATCH /api/products/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to update product", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to update product",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -78,7 +87,10 @@ export async function DELETE(
   } catch (error) {
     console.error("DELETE /api/products/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to delete product", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to delete product",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

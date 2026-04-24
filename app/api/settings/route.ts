@@ -29,6 +29,7 @@ export async function PATCH(req: Request) {
     const header_type = body?.header_type === "banner" ? "banner" : "text";
     const header_title = body?.header_title?.trim() || "Lamar Caffe";
     const header_subtitle = body?.header_subtitle?.trim() || "";
+    const header_subtitle_en = body?.header_subtitle_en?.trim() || "";
     const header_banner_url = body?.header_banner_url?.trim() || "";
     const header_banner_urls = body?.header_banner_urls?.trim() || "";
 
@@ -38,6 +39,7 @@ export async function PATCH(req: Request) {
         header_type = ${header_type},
         header_title = ${header_title},
         header_subtitle = ${header_subtitle},
+        header_subtitle_en = ${header_subtitle_en},
         header_banner_url = ${header_banner_url},
         header_banner_urls = ${header_banner_urls}
       WHERE id = 1
