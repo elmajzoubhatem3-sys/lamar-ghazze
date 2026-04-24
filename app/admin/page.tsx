@@ -25,12 +25,12 @@ type Settings = {
   header_title: string;
   header_subtitle: string;
   header_banner_url: string;
+  header_banner_urls?: string;
 };
 
 export default function AdminPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [settings, setSettings] = useState<Settings | null>(null);
 
   const [categoryName, setCategoryName] = useState("");
   const [categoryNameEn, setCategoryNameEn] = useState("");
@@ -42,6 +42,14 @@ export default function AdminPage() {
   const [productCategory, setProductCategory] = useState("");
   const [productSort, setProductSort] = useState("0");
   const [productImageFile, setProductImageFile] = useState<File | null>(null);
+
+  const [headerType, setHeaderType] = useState<"text" | "banner">("text");
+  const [headerTitle, setHeaderTitle] = useState("Lamar Caffe");
+  const [headerSubtitle, setHeaderSubtitle] = useState(
+    "Fresh meals, beautiful presentation, and a premium dining vibe."
+  );
+  const [headerBannerFiles, setHeaderBannerFiles] = useState<File[]>([]);
+  const [headerBannerUrls, setHeaderBannerUrls] = useState<string[]>([]);
 
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
@@ -55,14 +63,6 @@ export default function AdminPage() {
   const [editingProductCategory, setEditingProductCategory] = useState("");
   const [editingProductSort, setEditingProductSort] = useState("0");
   const [editingProductImageFile, setEditingProductImageFile] = useState<File | null>(null);
-
-  const [headerType, setHeaderType] = useState<"text" | "banner">("text");
-  const [headerTitle, setHeaderTitle] = useState("Lamar Caffe");
-  const [headerSubtitle, setHeaderSubtitle] = useState(
-    "Fresh meals, beautiful presentation, and a premium dining vibe."
-  );
-  const [headerBannerFile, setHeaderBannerFile] = useState<File | null>(null);
-  const [headerBannerUrl, setHeaderBannerUrl] = useState("");
 
   async function uploadFile(file: File) {
     const formData = new FormData();
@@ -89,14 +89,13 @@ export default function AdminPage() {
       fetch("/api/products", { cache: "no-store" }),
     ]);
 
-    const settingsData = await settingsRes.json();
+    const settingsData: Settings | null = await settingsRes.json();
     const catData = await catRes.json();
     const prodData = await prodRes.json();
 
     const safeCategories = Array.isArray(catData) ? catData : [];
     const safeProducts = Array.isArray(prodData) ? prodData : [];
 
-    setSettings(settingsData);
     setCategories(safeCategories);
     setProducts(safeProducts);
 
@@ -107,7 +106,18 @@ export default function AdminPage() {
         settingsData.header_subtitle ||
           "Fresh meals, beautiful presentation, and a premium dining vibe."
       );
-      setHeaderBannerUrl(settingsData.header_banner_url || "");
+
+      try {
+        setHeaderBannerUrls(
+          settingsData.header_banner_urls
+            ? JSON.parse(settingsData.header_banner_urls)
+            : settingsData.header_banner_url
+            ? [settingsData.header_banner_url]
+            : []
+        );
+      } catch {
+        setHeaderBannerUrls([]);
+      }
     }
 
     if (safeCategories.length > 0 && !productCategory) {
@@ -121,10 +131,17 @@ export default function AdminPage() {
 
   async function saveSettings() {
     try {
-      let bannerUrl = headerBannerUrl;
+      let urls = [...headerBannerUrls];
 
-      if (headerBannerFile) {
-        bannerUrl = await uploadFile(headerBannerFile);
+      if (headerBannerFiles.length > 0) {
+        const uploadedUrls: string[] = [];
+
+        for (const file of headerBannerFiles) {
+          const uploadedUrl = await uploadFile(file);
+          uploadedUrls.push(uploadedUrl);
+        }
+
+        urls = [...urls, ...uploadedUrls];
       }
 
       const res = await fetch("/api/settings", {
@@ -134,7 +151,8 @@ export default function AdminPage() {
           header_type: headerType,
           header_title: headerTitle,
           header_subtitle: headerSubtitle,
-          header_banner_url: bannerUrl,
+          header_banner_url: urls[0] || "",
+          header_banner_urls: JSON.stringify(urls),
         }),
       });
 
@@ -145,7 +163,7 @@ export default function AdminPage() {
         return;
       }
 
-      setHeaderBannerFile(null);
+      setHeaderBannerFiles([]);
       await loadData();
       alert("Settings saved");
     } catch (error) {
@@ -346,7 +364,7 @@ export default function AdminPage() {
               className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
             >
               <option value="text">Text Header</option>
-              <option value="banner">Banner Image</option>
+              <option value="banner">Banner Images</option>
             </select>
 
             <input
@@ -366,19 +384,36 @@ export default function AdminPage() {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setHeaderBannerFile(e.target.files?.[0] || null)}
+              multiple
+              onChange={(e) => setHeaderBannerFiles(Array.from(e.target.files || []))}
               className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
             />
 
-            {headerBannerUrl && (
-              <img
-                src={headerBannerUrl}
-                alt="Header banner"
-                className="h-32 w-full rounded-2xl object-cover"
-              />
+            {headerBannerUrls.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                {headerBannerUrls.map((url, index) => (
+                  <div key={url} className="relative">
+                    <img
+                      src={url}
+                      alt="Header banner"
+                      className="h-28 w-full rounded-2xl object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setHeaderBannerUrls(headerBannerUrls.filter((_, i) => i !== index))
+                      }
+                      className="absolute right-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs"
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
 
             <button
+              type="button"
               onClick={saveSettings}
               className="w-full rounded-2xl bg-white px-4 py-3 font-medium text-black"
             >

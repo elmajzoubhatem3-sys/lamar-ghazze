@@ -13,7 +13,10 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/settings error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch settings", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to fetch settings",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -25,10 +28,9 @@ export async function PATCH(req: Request) {
 
     const header_type = body?.header_type === "banner" ? "banner" : "text";
     const header_title = body?.header_title?.trim() || "Lamar Caffe";
-    const header_subtitle =
-      body?.header_subtitle?.trim() ||
-      "Fresh meals, beautiful presentation, and a premium dining vibe.";
+    const header_subtitle = body?.header_subtitle?.trim() || "";
     const header_banner_url = body?.header_banner_url?.trim() || "";
+    const header_banner_urls = body?.header_banner_urls?.trim() || "";
 
     const updated = await sql`
       UPDATE settings
@@ -36,7 +38,8 @@ export async function PATCH(req: Request) {
         header_type = ${header_type},
         header_title = ${header_title},
         header_subtitle = ${header_subtitle},
-        header_banner_url = ${header_banner_url}
+        header_banner_url = ${header_banner_url},
+        header_banner_urls = ${header_banner_urls}
       WHERE id = 1
       RETURNING *
     `;
@@ -45,7 +48,10 @@ export async function PATCH(req: Request) {
   } catch (error) {
     console.error("PATCH /api/settings error:", error);
     return NextResponse.json(
-      { error: "Failed to update settings", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to update settings",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

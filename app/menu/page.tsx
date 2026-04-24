@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Language = "ar" | "en";
 
@@ -26,6 +26,7 @@ type Settings = {
   header_title: string;
   header_subtitle: string;
   header_banner_url: string;
+  header_banner_urls?: string;
 };
 
 export default function MenuPage() {
@@ -33,6 +34,7 @@ export default function MenuPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("menu_language") as Language | null;
@@ -55,17 +57,21 @@ export default function MenuPage() {
         const safeCategories = Array.isArray(catData) ? catData : [];
         const safeProducts = Array.isArray(prodData) ? prodData : [];
 
+        const sortedCategories = [...safeCategories].sort(
+          (a, b) => Number(a.sort_order) - Number(b.sort_order)
+        );
+
+        const sortedProducts = [...safeProducts].sort(
+          (a, b) => Number(a.sort_order) - Number(b.sort_order)
+        );
+
         setSettings(settingsData);
-        setCategories(
-          [...safeCategories].sort(
-            (a, b) => Number(a.sort_order) - Number(b.sort_order)
-          )
-        );
-        setProducts(
-          [...safeProducts].sort(
-            (a, b) => Number(a.sort_order) - Number(b.sort_order)
-          )
-        );
+        setCategories(sortedCategories);
+        setProducts(sortedProducts);
+
+        if (sortedCategories.length > 0) {
+          setActiveCategoryId(Number(sortedCategories[0].id));
+        }
       } catch (error) {
         console.error("Failed to load menu data:", error);
       }
@@ -77,17 +83,6 @@ export default function MenuPage() {
   const chooseLanguage = (lang: Language) => {
     localStorage.setItem("menu_language", lang);
     setLanguage(lang);
-  };
-
-  const t = {
-    choose: language === "en" ? "Choose menu language" : "اختار لغة المنيو",
-    arabic: "العربية",
-    english: "English",
-    noCategories: language === "en" ? "No categories yet" : "ما في كاتغوريز بعد",
-    noProducts:
-      language === "en"
-        ? "No products in this category yet"
-        : "ما في منتجات بهيدي الكاتغوري بعد",
   };
 
   const direction = language === "ar" ? "rtl" : "ltr";
@@ -103,6 +98,8 @@ export default function MenuPage() {
   };
 
   const scrollToCategory = (categoryId: number) => {
+    setActiveCategoryId(categoryId);
+
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
       const yOffset = -20;
@@ -115,6 +112,18 @@ export default function MenuPage() {
     }
   };
 
+  let bannerUrls: string[] = [];
+
+  try {
+    bannerUrls = settings?.header_banner_urls
+      ? JSON.parse(settings.header_banner_urls)
+      : settings?.header_banner_url
+      ? [settings.header_banner_url]
+      : [];
+  } catch {
+    bannerUrls = [];
+  }
+
   const hasLanguage = language === "ar" || language === "en";
 
   const headerTitle = settings?.header_title || "Lamar Caffe";
@@ -125,7 +134,7 @@ export default function MenuPage() {
   return (
     <main dir={direction} className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
-        className="fixed inset-0 bg-cover bg-center scale-110 blur-md"
+        className="fixed inset-0 scale-110 bg-cover bg-center blur-md"
         style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
       />
       <div className="fixed inset-0 bg-black/70" />
@@ -156,13 +165,20 @@ export default function MenuPage() {
 
       <div className="relative z-10 px-3 py-4 md:px-4">
         <header className="mb-3">
-          {settings?.header_type === "banner" && settings.header_banner_url ? (
-            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-xl">
-              <img
-                src={settings.header_banner_url}
-                alt="Menu banner"
-                className="h-40 w-full object-cover md:h-60"
-              />
+          {settings?.header_type === "banner" && bannerUrls.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3">
+              {bannerUrls.map((url) => (
+                <div
+                  key={url}
+                  className="overflow-hidden rounded-3xl border border-white/10 shadow-xl"
+                >
+                  <img
+                    src={url}
+                    alt="Menu banner"
+                    className="h-40 w-full object-cover md:h-60"
+                  />
+                </div>
+              ))}
             </div>
           ) : (
             <div className="rounded-3xl border border-white/10 bg-white/10 px-5 py-4 shadow-xl backdrop-blur-2xl">
@@ -181,7 +197,11 @@ export default function MenuPage() {
             <button
               key={category.id}
               onClick={() => scrollToCategory(Number(category.id))}
-              className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-xl transition hover:bg-white/20"
+              className={`shrink-0 rounded-full px-4 py-2 text-sm backdrop-blur-xl transition ${
+                activeCategoryId === Number(category.id)
+                  ? "bg-amber-300 text-black shadow-[0_0_18px_rgba(252,211,77,0.45)]"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }`}
             >
               {displayCategoryName(category)}
             </button>
@@ -191,7 +211,7 @@ export default function MenuPage() {
         <div className="space-y-6">
           {categories.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-white/10 p-6 text-center backdrop-blur-xl">
-              {t.noCategories}
+              {language === "en" ? "No categories yet" : "ما في كاتغوريز بعد"}
             </div>
           ) : (
             categories.map((category) => {
@@ -213,7 +233,9 @@ export default function MenuPage() {
 
                   {categoryProducts.length === 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center text-sm text-neutral-300">
-                      {t.noProducts}
+                      {language === "en"
+                        ? "No products in this category yet"
+                        : "ما في منتجات بهيدي الكاتغوري بعد"}
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-3">
