@@ -10,13 +10,15 @@ export async function PATCH(
     const body = await req.json();
 
     const name = body?.name?.trim();
+    const name_en = body?.name_en?.trim() || "";
     const price_lbp = Number(body?.price_lbp);
     const category_id = Number(body?.category_id);
+    const sort_order = Number(body?.sort_order ?? 0);
     const image_url = body?.image_url;
 
     if (!name || !price_lbp || !category_id) {
       return NextResponse.json(
-        { error: "name, price_lbp, and category_id are required" },
+        { error: "Arabic name, price_lbp, and category_id are required" },
         { status: 400 }
       );
     }
@@ -26,8 +28,10 @@ export async function PATCH(
         UPDATE products
         SET
           name = ${name},
+          name_en = ${name_en},
           price_lbp = ${price_lbp},
           category_id = ${category_id},
+          sort_order = ${sort_order},
           image_url = ${image_url}
         WHERE id = ${Number(id)}
         RETURNING *
@@ -40,8 +44,10 @@ export async function PATCH(
       UPDATE products
       SET
         name = ${name},
+        name_en = ${name_en},
         price_lbp = ${price_lbp},
-        category_id = ${category_id}
+        category_id = ${category_id},
+        sort_order = ${sort_order}
       WHERE id = ${Number(id)}
       RETURNING *
     `;
@@ -50,10 +56,7 @@ export async function PATCH(
   } catch (error) {
     console.error("PATCH /api/products/[id] error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to update product",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to update product", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -75,10 +78,7 @@ export async function DELETE(
   } catch (error) {
     console.error("DELETE /api/products/[id] error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to delete product",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to delete product", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

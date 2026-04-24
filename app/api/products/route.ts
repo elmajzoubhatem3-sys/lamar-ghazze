@@ -7,23 +7,23 @@ export async function GET() {
       SELECT
         products.id,
         products.name,
+        products.name_en,
         products.price_lbp,
         products.image_url,
         products.category_id,
-        categories.name AS category_name
+        products.sort_order,
+        categories.name AS category_name,
+        categories.name_en AS category_name_en
       FROM products
       LEFT JOIN categories ON categories.id = products.category_id
-      ORDER BY products.id DESC
+      ORDER BY categories.sort_order ASC, products.sort_order ASC, products.id ASC
     `;
 
     return NextResponse.json(products);
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to fetch products",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to fetch products", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -35,19 +35,21 @@ export async function POST(req: Request) {
 
     const category_id = Number(body?.category_id);
     const name = body?.name?.trim();
+    const name_en = body?.name_en?.trim() || "";
     const price_lbp = Number(body?.price_lbp);
     const image_url = body?.image_url?.trim() || "";
+    const sort_order = Number(body?.sort_order ?? 0);
 
     if (!category_id || !name || !price_lbp) {
       return NextResponse.json(
-        { error: "category_id, name, and price_lbp are required" },
+        { error: "category_id, Arabic name, and price_lbp are required" },
         { status: 400 }
       );
     }
 
     const inserted = await sql`
-      INSERT INTO products (category_id, name, price_lbp, image_url)
-      VALUES (${category_id}, ${name}, ${price_lbp}, ${image_url})
+      INSERT INTO products (category_id, name, name_en, price_lbp, image_url, sort_order)
+      VALUES (${category_id}, ${name}, ${name_en}, ${price_lbp}, ${image_url}, ${sort_order})
       RETURNING *
     `;
 
@@ -55,10 +57,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("POST /api/products error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to create product",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to create product", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

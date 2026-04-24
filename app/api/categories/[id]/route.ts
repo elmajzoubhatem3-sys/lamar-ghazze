@@ -10,18 +10,16 @@ export async function PATCH(
     const body = await req.json();
 
     const name = body?.name?.trim();
+    const name_en = body?.name_en?.trim() || "";
     const sort_order = Number(body?.sort_order ?? 0);
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Category name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Arabic category name is required" }, { status: 400 });
     }
 
     const updated = await sql`
       UPDATE categories
-      SET name = ${name}, sort_order = ${sort_order}
+      SET name = ${name}, name_en = ${name_en}, sort_order = ${sort_order}
       WHERE id = ${Number(id)}
       RETURNING *
     `;
@@ -30,10 +28,7 @@ export async function PATCH(
   } catch (error) {
     console.error("PATCH /api/categories/[id] error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to update category",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to update category", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -54,7 +49,7 @@ export async function DELETE(
 
     if (products.length > 0) {
       return NextResponse.json(
-        { error: "Cannot delete category with products inside it" },
+        { error: "Delete products inside this category first" },
         { status: 400 }
       );
     }
@@ -68,10 +63,7 @@ export async function DELETE(
   } catch (error) {
     console.error("DELETE /api/categories/[id] error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to delete category",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to delete category", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
