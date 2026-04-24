@@ -156,7 +156,7 @@ export default function MenuPage() {
   return (
     <main dir={direction} className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
-        className="fixed inset-0 scale-110 bg-cover bg-center blur-md"
+        className="fixed inset-0 scale-110 bg-cover bg-center blur-sm"
         style={{ backgroundImage: "url('/restaurant-bg.jpg')" }}
       />
       <div className="fixed inset-0 bg-black/70" />
