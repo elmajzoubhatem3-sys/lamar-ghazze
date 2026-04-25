@@ -105,17 +105,14 @@ export default function AdminPage() {
   const [headerBannerFiles, setHeaderBannerFiles] = useState<File[]>([]);
   const [headerBannerUrls, setHeaderBannerUrls] = useState<string[]>([]);
 
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
-    null
-  );
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [editingCategoryNameEn, setEditingCategoryNameEn] = useState("");
 
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editingProductName, setEditingProductName] = useState("");
   const [editingProductNameEn, setEditingProductNameEn] = useState("");
-  const [editingProductDescription, setEditingProductDescription] =
-    useState("");
+  const [editingProductDescription, setEditingProductDescription] = useState("");
   const [editingProductDescriptionEn, setEditingProductDescriptionEn] =
     useState("");
   const [editingProductPrice, setEditingProductPrice] = useState("");
@@ -195,50 +192,80 @@ export default function AdminPage() {
     loadData();
   }, []);
 
-  async function saveCategoryOrder(newCategories: Category[]) {
-    await fetch("/api/categories/reorder", {
+  async function handleCategoryDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || String(active.id) === String(over.id)) return;
+
+    const oldIndex = categories.findIndex(
+      (cat) => String(cat.id) === String(active.id)
+    );
+
+    const newIndex = categories.findIndex(
+      (cat) => String(cat.id) === String(over.id)
+    );
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newCategories = arrayMove(categories, oldIndex, newIndex).map(
+      (cat, index) => ({
+        ...cat,
+        sort_order: index,
+      })
+    );
+
+    setCategories(newCategories);
+
+    const res = await fetch("/api/categories/reorder", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ items: newCategories }),
     });
-  }
 
-  async function saveProductOrder(newProducts: Product[]) {
-    await fetch("/api/products/reorder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: newProducts }),
-    });
-  }
+    if (!res.ok) {
+      alert("Failed to save category order");
+      await loadData();
+      return;
+    }
 
-  async function handleCategoryDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = categories.findIndex((cat) => cat.id === active.id);
-    const newIndex = categories.findIndex((cat) => cat.id === over.id);
-
-    const newCategories = arrayMove(categories, oldIndex, newIndex).map(
-      (cat, index) => ({ ...cat, sort_order: index })
-    );
-
-    setCategories(newCategories);
-    await saveCategoryOrder(newCategories);
+    await loadData();
   }
 
   async function handleProductDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over || String(active.id) === String(over.id)) return;
 
-    const oldIndex = products.findIndex((product) => product.id === active.id);
-    const newIndex = products.findIndex((product) => product.id === over.id);
+    const oldIndex = products.findIndex(
+      (product) => String(product.id) === String(active.id)
+    );
+
+    const newIndex = products.findIndex(
+      (product) => String(product.id) === String(over.id)
+    );
+
+    if (oldIndex === -1 || newIndex === -1) return;
 
     const newProducts = arrayMove(products, oldIndex, newIndex).map(
-      (product, index) => ({ ...product, sort_order: index })
+      (product, index) => ({
+        ...product,
+        sort_order: index,
+      })
     );
 
     setProducts(newProducts);
-    await saveProductOrder(newProducts);
+
+    const res = await fetch("/api/products/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: newProducts }),
+    });
+
+    if (!res.ok) {
+      alert("Failed to save product order");
+      await loadData();
+      return;
+    }
+
+    await loadData();
   }
 
   async function saveSettings() {
