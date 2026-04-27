@@ -33,17 +33,16 @@ export async function PATCH(req: Request) {
     const header_banner_url = body?.header_banner_url?.trim() || "";
     const header_banner_urls = body?.header_banner_urls?.trim() || "";
 
-    // 👇 الجديد
     const offers_enabled =
-      typeof body?.offers_enabled === "boolean"
-        ? body.offers_enabled
-        : true;
+      typeof body?.offers_enabled === "boolean" ? body.offers_enabled : true;
 
-    const offers_text =
-      body?.offers_text?.trim() || "استفد من عروضاتنا";
+    const offers_text = body?.offers_text?.trim() || "استفد من عروضاتنا";
+    const offers_text_en = body?.offers_text_en?.trim() || "Get our latest offers";
 
-    const offers_text_en =
-      body?.offers_text_en?.trim() || "Get our latest offers";
+    const ordering_enabled =
+      typeof body?.ordering_enabled === "boolean"
+        ? body.ordering_enabled
+        : false;
 
     const updated = await sql`
       UPDATE settings
@@ -54,12 +53,10 @@ export async function PATCH(req: Request) {
         header_subtitle_en = ${header_subtitle_en},
         header_banner_url = ${header_banner_url},
         header_banner_urls = ${header_banner_urls},
-
-        -- 👇 الجديد
         offers_enabled = ${offers_enabled},
         offers_text = ${offers_text},
-        offers_text_en = ${offers_text_en}
-
+        offers_text_en = ${offers_text_en},
+        ordering_enabled = ${ordering_enabled}
       WHERE id = 1
       RETURNING *
     `;
