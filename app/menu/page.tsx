@@ -248,7 +248,7 @@ export default function MenuPage() {
         <button
           type="button"
           onClick={() => setShowLeadModal(true)}
-          className="fixed left-3 top-0 z-40 flex flex-col items-center"
+          className="fixed left-3 top-0 z-40 flex flex-col items-center animate-swing"
         >
           <div className="h-12 w-[2px] bg-amber-200/70 shadow-[0_0_12px_rgba(252,211,77,0.5)]" />
           <div className="-mt-1 rotate-[-4deg] rounded-2xl border border-amber-200/40 bg-amber-300 px-3 py-2 text-xs font-bold text-black shadow-2xl">
