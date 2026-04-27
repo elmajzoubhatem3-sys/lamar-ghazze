@@ -569,16 +569,16 @@ export default function MenuPage() {
           )}
         </header>
 
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+        <div className="mb-6 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => scrollToCategory(Number(category.id))}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm backdrop-blur-xl transition ${
+              className={`shrink-0 rounded-full px-4 py-2 text-sm backdrop-blur-md transition ${
                 activeCategoryId === Number(category.id)
-                  ? "bg-[#D4A017]/90 backdrop-blur-md text-[#1f1600] shadow-[0_0_18px_rgba(252,211,77,0.45)]"
+                  ? "bg-[#D4A017]/90 text-[#1f1600]"
                   : "bg-white/10 text-white hover:bg-white/20"
-              }`}
+               }`}
             >
               {displayCategoryName(category)}
             </button>
