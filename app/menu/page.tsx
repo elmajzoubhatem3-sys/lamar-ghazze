@@ -353,7 +353,20 @@ export default function MenuPage() {
           onClick={() => setShowLeadModal(true)}
           className="fixed left-3 top-0 z-40 flex flex-col items-center animate-swing"
         >
-          <div className="h-12 w-[2px] bg-amber-200/70 shadow-[0_0_12px_rgba(252,211,77,0.5)]" />
+          <svg
+            width="26"
+            height="52"
+            viewBox="0 0 26 52"
+            fill="none"
+            className="drop-shadow-[0_0_10px_rgba(212,160,23,0.55)]"
+          >
+            <path
+              d="M13 0 C4 10 22 18 13 28 C4 38 20 43 13 52"
+              stroke="rgba(212,160,23,0.85)"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+            />
+          </svg> 
           <div className="-mt-1 rotate-[-4deg] rounded-2xl border border-amber-200/40 bg-[#D4A017]/90 backdrop-blur-md px-3 py-2 text-xs font-bold text-[#1f1600] shadow-2xl">
             {offerText}
           </div>
