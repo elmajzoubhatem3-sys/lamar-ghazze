@@ -44,6 +44,7 @@ type Settings = {
   offers_enabled?: boolean;
   offers_text?: string;
   offers_text_en?: string;
+  ordering_enabled?: boolean;
 };
 
 function SortableItem({
@@ -111,6 +112,8 @@ export default function AdminPage() {
   const [offersEnabled, setOffersEnabled] = useState(true);
   const [offersText, setOffersText] = useState("استفد من عروضاتنا");
   const [offersTextEn, setOffersTextEn] = useState("Get our latest offers");
+
+  const [orderingEnabled, setOrderingEnabled] = useState(false);
 
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
     null
@@ -183,6 +186,8 @@ export default function AdminPage() {
       setOffersEnabled(settingsData.offers_enabled !== false);
       setOffersText(settingsData.offers_text || "استفد من عروضاتنا");
       setOffersTextEn(settingsData.offers_text_en || "Get our latest offers");
+
+      setOrderingEnabled(settingsData.ordering_enabled === true);
 
       try {
         setHeaderBannerUrls(
@@ -310,6 +315,7 @@ export default function AdminPage() {
           offers_enabled: offersEnabled,
           offers_text: offersText,
           offers_text_en: offersTextEn,
+          ordering_enabled: orderingEnabled,
         }),
       });
 
@@ -434,7 +440,8 @@ export default function AdminPage() {
     setEditingCategoryId(null);
     await loadData();
   }
-    async function deleteCategory(id: number) {
+
+  async function deleteCategory(id: number) {
     if (!confirm("Delete this category?")) return;
 
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
@@ -519,8 +526,6 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[#050505] px-4 py-6 text-white md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-
-        {/* HEADER SETTINGS */}
         <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
           <h2 className="text-xl font-semibold">Header Settings</h2>
 
@@ -573,7 +578,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* OFFERS SETTINGS */}
         <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
           <h2 className="text-xl font-semibold">Offers Popup</h2>
 
@@ -610,7 +614,28 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* DRAG CATEGORIES */}
+        <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
+          <h2 className="text-xl font-semibold">Ordering Menu</h2>
+
+          <div className="mt-4 space-y-3">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={orderingEnabled}
+                onChange={(e) => setOrderingEnabled(e.target.checked)}
+              />
+              Enable ordering from menu
+            </label>
+
+            <button
+              onClick={saveSettings}
+              className="w-full rounded-2xl bg-green-400 px-4 py-3 text-black"
+            >
+              Save Ordering Settings
+            </button>
+          </div>
+        </div>
+
         <div>
           <h2 className="mb-3 text-xl font-semibold">Categories</h2>
 
@@ -635,7 +660,6 @@ export default function AdminPage() {
           </DndContext>
         </div>
 
-        {/* DRAG PRODUCTS */}
         <div>
           <h2 className="mb-3 text-xl font-semibold">Products</h2>
 
@@ -659,7 +683,6 @@ export default function AdminPage() {
             </SortableContext>
           </DndContext>
         </div>
-
       </div>
     </main>
   );
