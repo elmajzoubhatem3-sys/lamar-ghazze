@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  DndContext,
-  closestCenter,
-  type DragEndEvent,
-} from "@dnd-kit/core";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
@@ -54,14 +50,8 @@ function SortableItem({
   id: number;
   children: React.ReactNode;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -115,17 +105,14 @@ export default function AdminPage() {
 
   const [orderingEnabled, setOrderingEnabled] = useState(false);
 
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
-    null
-  );
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [editingCategoryNameEn, setEditingCategoryNameEn] = useState("");
 
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editingProductName, setEditingProductName] = useState("");
   const [editingProductNameEn, setEditingProductNameEn] = useState("");
-  const [editingProductDescription, setEditingProductDescription] =
-    useState("");
+  const [editingProductDescription, setEditingProductDescription] = useState("");
   const [editingProductDescriptionEn, setEditingProductDescriptionEn] =
     useState("");
   const [editingProductPrice, setEditingProductPrice] = useState("");
@@ -165,17 +152,16 @@ export default function AdminPage() {
     const safeCategories = Array.isArray(catData) ? catData : [];
     const safeProducts = Array.isArray(prodData) ? prodData : [];
 
-    setCategories(
-      [...safeCategories].sort(
-        (a, b) => Number(a.sort_order) - Number(b.sort_order)
-      )
+    const sortedCategories = [...safeCategories].sort(
+      (a, b) => Number(a.sort_order) - Number(b.sort_order)
     );
 
-    setProducts(
-      [...safeProducts].sort(
-        (a, b) => Number(a.sort_order) - Number(b.sort_order)
-      )
+    const sortedProducts = [...safeProducts].sort(
+      (a, b) => Number(a.sort_order) - Number(b.sort_order)
     );
+
+    setCategories(sortedCategories);
+    setProducts(sortedProducts);
 
     if (settingsData) {
       setHeaderType(settingsData.header_type || "text");
@@ -202,8 +188,8 @@ export default function AdminPage() {
       }
     }
 
-    if (safeCategories.length > 0 && !productCategory) {
-      setProductCategory(String(safeCategories[0].id));
+    if (sortedCategories.length > 0 && !productCategory) {
+      setProductCategory(String(sortedCategories[0].id));
     }
   }
 
@@ -218,7 +204,6 @@ export default function AdminPage() {
     const oldIndex = categories.findIndex(
       (cat) => String(cat.id) === String(active.id)
     );
-
     const newIndex = categories.findIndex(
       (cat) => String(cat.id) === String(over.id)
     );
@@ -226,10 +211,7 @@ export default function AdminPage() {
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newCategories = arrayMove(categories, oldIndex, newIndex).map(
-      (cat, index) => ({
-        ...cat,
-        sort_order: index,
-      })
+      (cat, index) => ({ ...cat, sort_order: index })
     );
 
     setCategories(newCategories);
@@ -256,7 +238,6 @@ export default function AdminPage() {
     const oldIndex = products.findIndex(
       (product) => String(product.id) === String(active.id)
     );
-
     const newIndex = products.findIndex(
       (product) => String(product.id) === String(over.id)
     );
@@ -264,10 +245,7 @@ export default function AdminPage() {
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newProducts = arrayMove(products, oldIndex, newIndex).map(
-      (product, index) => ({
-        ...product,
-        sort_order: index,
-      })
+      (product, index) => ({ ...product, sort_order: index })
     );
 
     setProducts(newProducts);
@@ -526,6 +504,10 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[#050505] px-4 py-6 text-white md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl">
+          <h1 className="text-3xl font-semibold">Lamar Caffe Admin</h1>
+        </div>
+
         <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
           <h2 className="text-xl font-semibold">Header Settings</h2>
 
@@ -569,7 +551,33 @@ export default function AdminPage() {
               className="w-full rounded-2xl bg-black/30 px-4 py-3"
             />
 
+            {headerBannerUrls.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                {headerBannerUrls.map((url, index) => (
+                  <div key={url} className="relative">
+                    <img
+                      src={url}
+                      alt="Header banner"
+                      className="h-28 w-full rounded-2xl object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setHeaderBannerUrls(
+                          headerBannerUrls.filter((_, i) => i !== index)
+                        )
+                      }
+                      className="absolute right-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs"
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <button
+              type="button"
               onClick={saveSettings}
               className="w-full rounded-2xl bg-white px-4 py-3 text-black"
             >
@@ -606,6 +614,7 @@ export default function AdminPage() {
             />
 
             <button
+              type="button"
               onClick={saveSettings}
               className="w-full rounded-2xl bg-amber-300 px-4 py-3 text-black"
             >
@@ -628,6 +637,7 @@ export default function AdminPage() {
             </label>
 
             <button
+              type="button"
               onClick={saveSettings}
               className="w-full rounded-2xl bg-green-400 px-4 py-3 text-black"
             >
@@ -636,52 +646,373 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div>
-          <h2 className="mb-3 text-xl font-semibold">Categories</h2>
-
-          <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={handleCategoryDragEnd}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <form
+            onSubmit={handleAddCategory}
+            className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl"
           >
-            <SortableContext
-              items={categories.map((c) => c.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-3">
+            <h2 className="text-xl font-semibold">Add Category</h2>
+
+            <div className="mt-4 space-y-3">
+              <input
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                placeholder="Arabic category name"
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <input
+                value={categoryNameEn}
+                onChange={(e) => setCategoryNameEn(e.target.value)}
+                placeholder="English category name"
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <button className="w-full rounded-2xl bg-white px-4 py-3 text-black">
+                Add Category
+              </button>
+            </div>
+          </form>
+
+          <form
+            onSubmit={handleAddProduct}
+            className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl"
+          >
+            <h2 className="text-xl font-semibold">Add Product</h2>
+
+            <div className="mt-4 space-y-3">
+              <input
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                placeholder="Arabic product name"
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <input
+                value={productNameEn}
+                onChange={(e) => setProductNameEn(e.target.value)}
+                placeholder="English product name"
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <textarea
+                value={productDescription}
+                onChange={(e) => setProductDescription(e.target.value)}
+                placeholder="Arabic product description"
+                rows={3}
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <textarea
+                value={productDescriptionEn}
+                onChange={(e) => setProductDescriptionEn(e.target.value)}
+                placeholder="English product description"
+                rows={3}
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <input
+                value={productPrice}
+                onChange={(e) => setProductPrice(e.target.value)}
+                type="number"
+                placeholder="Price in LBP"
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <select
+                value={productCategory}
+                onChange={(e) => setProductCategory(e.target.value)}
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              >
+                <option value="">Choose category</option>
                 {categories.map((cat) => (
-                  <SortableItem key={cat.id} id={cat.id}>
-                    <div className="rounded-xl bg-white/10 p-3">
-                      {cat.name} / {cat.name_en}
-                    </div>
-                  </SortableItem>
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+              </select>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProductImageFile(e.target.files?.[0] || null)}
+                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+              />
+
+              <button className="w-full rounded-2xl bg-amber-300 px-4 py-3 text-black">
+                Add Product
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div>
-          <h2 className="mb-3 text-xl font-semibold">Products</h2>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
+            <h2 className="text-xl font-semibold">Categories</h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Drag the ≡ button to reorder categories.
+            </p>
 
-          <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={handleProductDragEnd}
-          >
-            <SortableContext
-              items={products.map((p) => p.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-3">
-                {products.map((p) => (
-                  <SortableItem key={p.id} id={p.id}>
-                    <div className="rounded-xl bg-white/10 p-3">
-                      {p.name}
-                    </div>
-                  </SortableItem>
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+            <div className="mt-4">
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={handleCategoryDragEnd}
+              >
+                <SortableContext
+                  items={categories.map((c) => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {categories.map((cat) => (
+                      <SortableItem key={cat.id} id={cat.id}>
+                        <div className="rounded-xl bg-white/10 p-4">
+                          {editingCategoryId === cat.id ? (
+                            <div className="space-y-3">
+                              <input
+                                value={editingCategoryName}
+                                onChange={(e) =>
+                                  setEditingCategoryName(e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <input
+                                value={editingCategoryNameEn}
+                                onChange={(e) =>
+                                  setEditingCategoryNameEn(e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={saveEditCategory}
+                                  className="rounded-xl bg-amber-300 px-4 py-2 text-black"
+                                >
+                                  Save
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingCategoryId(null)}
+                                  className="rounded-xl bg-white/10 px-4 py-2"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="font-medium">{cat.name}</p>
+                                <p className="text-sm text-neutral-300">
+                                  {cat.name_en || "No English name"}
+                                </p>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => startEditCategory(cat)}
+                                  className="rounded-xl bg-white/10 px-3 py-2 text-sm"
+                                >
+                                  Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => deleteCategory(cat.id)}
+                                  className="rounded-xl bg-red-500/20 px-3 py-2 text-sm text-red-200"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </SortableItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
+            <h2 className="text-xl font-semibold">Products</h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Drag the ≡ button to reorder products.
+            </p>
+
+            <div className="mt-4">
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={handleProductDragEnd}
+              >
+                <SortableContext
+                  items={products.map((p) => p.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {products.map((product) => (
+                      <SortableItem key={product.id} id={product.id}>
+                        <div className="rounded-xl bg-white/10 p-4">
+                          {editingProductId === product.id ? (
+                            <div className="space-y-3">
+                              <input
+                                value={editingProductName}
+                                onChange={(e) =>
+                                  setEditingProductName(e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <input
+                                value={editingProductNameEn}
+                                onChange={(e) =>
+                                  setEditingProductNameEn(e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <textarea
+                                value={editingProductDescription}
+                                onChange={(e) =>
+                                  setEditingProductDescription(e.target.value)
+                                }
+                                rows={3}
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <textarea
+                                value={editingProductDescriptionEn}
+                                onChange={(e) =>
+                                  setEditingProductDescriptionEn(e.target.value)
+                                }
+                                rows={3}
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <input
+                                value={editingProductPrice}
+                                onChange={(e) =>
+                                  setEditingProductPrice(e.target.value)
+                                }
+                                type="number"
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <select
+                                value={editingProductCategory}
+                                onChange={(e) =>
+                                  setEditingProductCategory(e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              >
+                                {categories.map((cat) => (
+                                  <option key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) =>
+                                  setEditingProductImageFile(
+                                    e.target.files?.[0] || null
+                                  )
+                                }
+                                className="w-full rounded-2xl bg-black/30 px-4 py-3"
+                              />
+
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={saveEditProduct}
+                                  className="rounded-xl bg-amber-300 px-4 py-2 text-black"
+                                >
+                                  Save
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingProductId(null)}
+                                  className="rounded-xl bg-white/10 px-4 py-2"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start gap-3">
+                              {product.image_url ? (
+                                <img
+                                  src={product.image_url}
+                                  alt={product.name}
+                                  className="h-16 w-16 rounded-xl object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/5 text-xs text-neutral-400">
+                                  No Image
+                                </div>
+                              )}
+
+                              <div className="flex-1">
+                                <p className="font-medium">{product.name}</p>
+                                <p className="text-sm text-neutral-300">
+                                  {product.name_en || "No English name"}
+                                </p>
+
+                                {product.description && (
+                                  <p className="text-xs text-neutral-400">
+                                    {product.description}
+                                  </p>
+                                )}
+
+                                {product.description_en && (
+                                  <p className="text-xs text-neutral-500">
+                                    {product.description_en}
+                                  </p>
+                                )}
+
+                                <p className="text-sm text-amber-200">
+                                  {Number(product.price_lbp).toLocaleString(
+                                    "en-US"
+                                  )}{" "}
+                                  L.L
+                                </p>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => startEditProduct(product)}
+                                  className="rounded-xl bg-white/10 px-3 py-2 text-sm"
+                                >
+                                  Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => deleteProduct(product.id)}
+                                  className="rounded-xl bg-red-500/20 px-3 py-2 text-sm text-red-200"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </SortableItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          </div>
         </div>
       </div>
     </main>
