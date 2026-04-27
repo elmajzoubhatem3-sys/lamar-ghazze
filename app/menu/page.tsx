@@ -30,6 +30,9 @@ type Settings = {
   header_subtitle_en?: string;
   header_banner_url: string;
   header_banner_urls?: string;
+  offers_enabled?: boolean;
+  offers_text?: string;
+  offers_text_en?: string;
 };
 
 export default function MenuPage() {
@@ -39,6 +42,12 @@ export default function MenuPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+
+  const [showLeadModal, setShowLeadModal] = useState(false);
+  const [leadName, setLeadName] = useState("");
+  const [leadPhone, setLeadPhone] = useState("");
+  const [leadLoading, setLeadLoading] = useState(false);
+  const [leadSuccess, setLeadSuccess] = useState(false);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("menu_language") as Language | null;
@@ -145,6 +154,49 @@ export default function MenuPage() {
     }
   };
 
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!leadName.trim() || !leadPhone.trim()) {
+      alert(language === "en" ? "Please enter your name and phone." : "رجاءً اكتب اسمك ورقمك.");
+      return;
+    }
+
+    setLeadLoading(true);
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: leadName,
+          phone: leadPhone,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to submit");
+        return;
+      }
+
+      setLeadSuccess(true);
+      setLeadName("");
+      setLeadPhone("");
+
+      setTimeout(() => {
+        setShowLeadModal(false);
+        setLeadSuccess(false);
+      }, 1600);
+    } catch (error) {
+      console.error(error);
+      alert(language === "en" ? "Something went wrong." : "صار في خطأ.");
+    } finally {
+      setLeadLoading(false);
+    }
+  }
+
   const hasLanguage = language === "ar" || language === "en";
 
   const headerTitle = settings?.header_title || "Lamar Caffe";
@@ -152,6 +204,13 @@ export default function MenuPage() {
     language === "en"
       ? settings?.header_subtitle_en || settings?.header_subtitle || ""
       : settings?.header_subtitle || "";
+
+  const offerText =
+    language === "en"
+      ? settings?.offers_text_en || "Get our latest offers"
+      : settings?.offers_text || "استفد من عروضاتنا";
+
+  const offersEnabled = settings?.offers_enabled !== false;
 
   return (
     <main dir={direction} className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -181,6 +240,82 @@ export default function MenuPage() {
                 English
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {hasLanguage && offersEnabled && (
+        <button
+          type="button"
+          onClick={() => setShowLeadModal(true)}
+          className="fixed left-3 top-0 z-40 flex flex-col items-center"
+        >
+          <div className="h-12 w-[2px] bg-amber-200/70 shadow-[0_0_12px_rgba(252,211,77,0.5)]" />
+          <div className="-mt-1 rotate-[-4deg] rounded-2xl border border-amber-200/40 bg-amber-300 px-3 py-2 text-xs font-bold text-black shadow-2xl">
+            {offerText}
+          </div>
+        </button>
+      )}
+
+      {showLeadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-5 backdrop-blur-xl">
+          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {language === "en" ? "Stay updated" : "خليك متابع عروضاتنا"}
+                </h2>
+                <p className="mt-1 text-sm text-neutral-300">
+                  {language === "en"
+                    ? "Enter your name and phone to receive our latest offers."
+                    : "حط اسمك ورقمك ليضل يوصلك كل جديد."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowLeadModal(false)}
+                className="rounded-full bg-white/10 px-3 py-1 text-sm"
+              >
+                X
+              </button>
+            </div>
+
+            {leadSuccess ? (
+              <div className="mt-5 rounded-2xl bg-green-500/20 p-4 text-center text-green-100">
+                {language === "en" ? "Thank you! Saved successfully." : "شكراً! تم حفظ معلوماتك."}
+              </div>
+            ) : (
+              <form onSubmit={submitLead} className="mt-5 space-y-3">
+                <input
+                  value={leadName}
+                  onChange={(e) => setLeadName(e.target.value)}
+                  placeholder={language === "en" ? "Your name" : "اسمك"}
+                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                />
+
+                <input
+                  value={leadPhone}
+                  onChange={(e) => setLeadPhone(e.target.value)}
+                  placeholder={language === "en" ? "Phone number" : "رقم الهاتف"}
+                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                />
+
+                <button
+                  type="submit"
+                  disabled={leadLoading}
+                  className="w-full rounded-2xl bg-amber-300 px-4 py-3 font-semibold text-black"
+                >
+                  {leadLoading
+                    ? language === "en"
+                      ? "Saving..."
+                      : "عم نحفظ..."
+                    : language === "en"
+                    ? "Submit"
+                    : "إرسال"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

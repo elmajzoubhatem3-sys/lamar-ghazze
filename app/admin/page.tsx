@@ -41,6 +41,9 @@ type Settings = {
   header_subtitle_en?: string;
   header_banner_url: string;
   header_banner_urls?: string;
+  offers_enabled?: boolean;
+  offers_text?: string;
+  offers_text_en?: string;
 };
 
 function SortableItem({
@@ -105,14 +108,21 @@ export default function AdminPage() {
   const [headerBannerFiles, setHeaderBannerFiles] = useState<File[]>([]);
   const [headerBannerUrls, setHeaderBannerUrls] = useState<string[]>([]);
 
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [offersEnabled, setOffersEnabled] = useState(true);
+  const [offersText, setOffersText] = useState("استفد من عروضاتنا");
+  const [offersTextEn, setOffersTextEn] = useState("Get our latest offers");
+
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
+    null
+  );
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [editingCategoryNameEn, setEditingCategoryNameEn] = useState("");
 
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editingProductName, setEditingProductName] = useState("");
   const [editingProductNameEn, setEditingProductNameEn] = useState("");
-  const [editingProductDescription, setEditingProductDescription] = useState("");
+  const [editingProductDescription, setEditingProductDescription] =
+    useState("");
   const [editingProductDescriptionEn, setEditingProductDescriptionEn] =
     useState("");
   const [editingProductPrice, setEditingProductPrice] = useState("");
@@ -169,6 +179,10 @@ export default function AdminPage() {
       setHeaderTitle(settingsData.header_title || "Lamar Caffe");
       setHeaderSubtitle(settingsData.header_subtitle || "");
       setHeaderSubtitleEn(settingsData.header_subtitle_en || "");
+
+      setOffersEnabled(settingsData.offers_enabled !== false);
+      setOffersText(settingsData.offers_text || "استفد من عروضاتنا");
+      setOffersTextEn(settingsData.offers_text_en || "Get our latest offers");
 
       try {
         setHeaderBannerUrls(
@@ -293,6 +307,9 @@ export default function AdminPage() {
           header_subtitle_en: headerSubtitleEn,
           header_banner_url: urls[0] || "",
           header_banner_urls: JSON.stringify(urls),
+          offers_enabled: offersEnabled,
+          offers_text: offersText,
+          offers_text_en: offersTextEn,
         }),
       });
 
@@ -417,8 +434,7 @@ export default function AdminPage() {
     setEditingCategoryId(null);
     await loadData();
   }
-
-  async function deleteCategory(id: number) {
+    async function deleteCategory(id: number) {
     if (!confirm("Delete this category?")) return;
 
     const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
@@ -503,428 +519,147 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[#050505] px-4 py-6 text-white md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl">
-          <p className="text-[11px] uppercase tracking-[0.35em] text-amber-300/80">
-            Admin Dashboard
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold">Lamar Caffe Admin</h1>
-        </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl">
+        {/* HEADER SETTINGS */}
+        <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
           <h2 className="text-xl font-semibold">Header Settings</h2>
 
           <div className="mt-4 space-y-3">
             <select
               value={headerType}
               onChange={(e) => setHeaderType(e.target.value as "text" | "banner")}
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
             >
-              <option value="text">Text Header</option>
-              <option value="banner">Banner Images</option>
+              <option value="text">Text</option>
+              <option value="banner">Banner</option>
             </select>
 
             <input
               value={headerTitle}
               onChange={(e) => setHeaderTitle(e.target.value)}
-              placeholder="Header title"
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              placeholder="Title"
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
             />
 
             <input
               value={headerSubtitle}
               onChange={(e) => setHeaderSubtitle(e.target.value)}
-              placeholder="Arabic header subtitle"
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              placeholder="Arabic subtitle"
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
             />
 
             <input
               value={headerSubtitleEn}
               onChange={(e) => setHeaderSubtitleEn(e.target.value)}
-              placeholder="English header subtitle"
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              placeholder="English subtitle"
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
             />
 
             <input
               type="file"
-              accept="image/*"
               multiple
-              onChange={(e) => setHeaderBannerFiles(Array.from(e.target.files || []))}
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+              onChange={(e) =>
+                setHeaderBannerFiles(Array.from(e.target.files || []))
+              }
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
             />
 
-            {headerBannerUrls.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                {headerBannerUrls.map((url, index) => (
-                  <div key={url} className="relative">
-                    <img
-                      src={url}
-                      alt="Header banner"
-                      className="h-28 w-full rounded-2xl object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setHeaderBannerUrls(headerBannerUrls.filter((_, i) => i !== index))
-                      }
-                      className="absolute right-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs"
-                    >
-                      X
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
             <button
-              type="button"
               onClick={saveSettings}
-              className="w-full rounded-2xl bg-white px-4 py-3 font-medium text-black"
+              className="w-full rounded-2xl bg-white px-4 py-3 text-black"
             >
-              Save Header Settings
+              Save Header
             </button>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <form
-            onSubmit={handleAddCategory}
-            className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl"
+        {/* OFFERS SETTINGS */}
+        <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
+          <h2 className="text-xl font-semibold">Offers Popup</h2>
+
+          <div className="mt-4 space-y-3">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={offersEnabled}
+                onChange={(e) => setOffersEnabled(e.target.checked)}
+              />
+              Enable Offers Popup
+            </label>
+
+            <input
+              value={offersText}
+              onChange={(e) => setOffersText(e.target.value)}
+              placeholder="Arabic text"
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
+            />
+
+            <input
+              value={offersTextEn}
+              onChange={(e) => setOffersTextEn(e.target.value)}
+              placeholder="English text"
+              className="w-full rounded-2xl bg-black/30 px-4 py-3"
+            />
+
+            <button
+              onClick={saveSettings}
+              className="w-full rounded-2xl bg-amber-300 px-4 py-3 text-black"
+            >
+              Save Offers Settings
+            </button>
+          </div>
+        </div>
+
+        {/* DRAG CATEGORIES */}
+        <div>
+          <h2 className="mb-3 text-xl font-semibold">Categories</h2>
+
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleCategoryDragEnd}
           >
-            <h2 className="text-xl font-semibold">Add Category</h2>
-
-            <div className="mt-4 space-y-3">
-              <input
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                placeholder="Arabic category name"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <input
-                value={categoryNameEn}
-                onChange={(e) => setCategoryNameEn(e.target.value)}
-                placeholder="English category name"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <button className="w-full rounded-2xl bg-white px-4 py-3 font-medium text-black">
-                Add Category
-              </button>
-            </div>
-          </form>
-
-          <form
-            onSubmit={handleAddProduct}
-            className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl"
-          >
-            <h2 className="text-xl font-semibold">Add Product</h2>
-
-            <div className="mt-4 space-y-3">
-              <input
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="Arabic product name"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <input
-                value={productNameEn}
-                onChange={(e) => setProductNameEn(e.target.value)}
-                placeholder="English product name"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <textarea
-                value={productDescription}
-                onChange={(e) => setProductDescription(e.target.value)}
-                placeholder="Arabic product description"
-                rows={3}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <textarea
-                value={productDescriptionEn}
-                onChange={(e) => setProductDescriptionEn(e.target.value)}
-                placeholder="English product description"
-                rows={3}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <input
-                value={productPrice}
-                onChange={(e) => setProductPrice(e.target.value)}
-                type="number"
-                placeholder="Price in LBP"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <select
-                value={productCategory}
-                onChange={(e) => setProductCategory(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              >
-                <option value="">Choose category</option>
+            <SortableContext
+              items={categories.map((c) => c.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
+                  <SortableItem key={cat.id} id={cat.id}>
+                    <div className="rounded-xl bg-white/10 p-3">
+                      {cat.name} / {cat.name_en}
+                    </div>
+                  </SortableItem>
                 ))}
-              </select>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setProductImageFile(e.target.files?.[0] || null)}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-              />
-              <button className="w-full rounded-2xl bg-amber-300 px-4 py-3 font-medium text-black">
-                Add Product
-              </button>
-            </div>
-          </form>
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl">
-            <h2 className="text-xl font-semibold">Categories</h2>
-            <p className="mt-1 text-sm text-neutral-400">
-              Drag the ≡ button to reorder categories.
-            </p>
+        {/* DRAG PRODUCTS */}
+        <div>
+          <h2 className="mb-3 text-xl font-semibold">Products</h2>
 
-            <div className="mt-4 space-y-3">
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={handleCategoryDragEnd}
-              >
-                <SortableContext
-                  items={categories.map((cat) => cat.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-3">
-                    {categories.map((cat) => (
-                      <SortableItem key={cat.id} id={cat.id}>
-                        <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                          {editingCategoryId === cat.id ? (
-                            <div className="space-y-3">
-                              <input
-                                value={editingCategoryName}
-                                onChange={(e) =>
-                                  setEditingCategoryName(e.target.value)
-                                }
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <input
-                                value={editingCategoryNameEn}
-                                onChange={(e) =>
-                                  setEditingCategoryNameEn(e.target.value)
-                                }
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={saveEditCategory}
-                                  className="rounded-xl bg-amber-300 px-4 py-2 text-black"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingCategoryId(null)}
-                                  className="rounded-xl bg-white/10 px-4 py-2"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-between gap-3">
-                              <div>
-                                <p className="font-medium">{cat.name}</p>
-                                <p className="text-sm text-neutral-300">
-                                  {cat.name_en || "No English name"}
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => startEditCategory(cat)}
-                                  className="rounded-xl bg-white/10 px-3 py-2 text-sm"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => deleteCategory(cat.id)}
-                                  className="rounded-xl bg-red-500/20 px-3 py-2 text-sm text-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </SortableItem>
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur-2xl">
-            <h2 className="text-xl font-semibold">Products</h2>
-            <p className="mt-1 text-sm text-neutral-400">
-              Drag the ≡ button to reorder products.
-            </p>
-
-            <div className="mt-4">
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={handleProductDragEnd}
-              >
-                <SortableContext
-                  items={products.map((product) => product.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-3">
-                    {products.map((product) => (
-                      <SortableItem key={product.id} id={product.id}>
-                        <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                          {editingProductId === product.id ? (
-                            <div className="space-y-3">
-                              <input
-                                value={editingProductName}
-                                onChange={(e) =>
-                                  setEditingProductName(e.target.value)
-                                }
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <input
-                                value={editingProductNameEn}
-                                onChange={(e) =>
-                                  setEditingProductNameEn(e.target.value)
-                                }
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <textarea
-                                value={editingProductDescription}
-                                onChange={(e) =>
-                                  setEditingProductDescription(e.target.value)
-                                }
-                                rows={3}
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <textarea
-                                value={editingProductDescriptionEn}
-                                onChange={(e) =>
-                                  setEditingProductDescriptionEn(e.target.value)
-                                }
-                                rows={3}
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <input
-                                value={editingProductPrice}
-                                onChange={(e) =>
-                                  setEditingProductPrice(e.target.value)
-                                }
-                                type="number"
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <select
-                                value={editingProductCategory}
-                                onChange={(e) =>
-                                  setEditingProductCategory(e.target.value)
-                                }
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              >
-                                {categories.map((cat) => (
-                                  <option key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                  </option>
-                                ))}
-                              </select>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) =>
-                                  setEditingProductImageFile(
-                                    e.target.files?.[0] || null
-                                  )
-                                }
-                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={saveEditProduct}
-                                  className="rounded-xl bg-amber-300 px-4 py-2 text-black"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setEditingProductId(null)}
-                                  className="rounded-xl bg-white/10 px-4 py-2"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-start gap-3">
-                              {product.image_url ? (
-                                <img
-                                  src={product.image_url}
-                                  alt={product.name}
-                                  className="h-16 w-16 rounded-xl object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/5 text-xs text-neutral-400">
-                                  No Image
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                <p className="font-medium">{product.name}</p>
-                                <p className="text-sm text-neutral-300">
-                                  {product.name_en || "No English name"}
-                                </p>
-                                {product.description && (
-                                  <p className="text-xs text-neutral-400">
-                                    {product.description}
-                                  </p>
-                                )}
-                                {product.description_en && (
-                                  <p className="text-xs text-neutral-500">
-                                    {product.description_en}
-                                  </p>
-                                )}
-                                <p className="text-sm text-amber-200">
-                                  {Number(product.price_lbp).toLocaleString(
-                                    "en-US"
-                                  )}{" "}
-                                  L.L
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => startEditProduct(product)}
-                                  className="rounded-xl bg-white/10 px-3 py-2 text-sm"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => deleteProduct(product.id)}
-                                  className="rounded-xl bg-red-500/20 px-3 py-2 text-sm text-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </SortableItem>
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </div>
-          </div>
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleProductDragEnd}
+          >
+            <SortableContext
+              items={products.map((p) => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {products.map((p) => (
+                  <SortableItem key={p.id} id={p.id}>
+                    <div className="rounded-xl bg-white/10 p-3">
+                      {p.name}
+                    </div>
+                  </SortableItem>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
+
       </div>
     </main>
   );
