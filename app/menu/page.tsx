@@ -332,7 +332,7 @@ export default function MenuPage() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 onClick={() => chooseLanguage("ar")}
-                className="rounded-2xl bg-white px-4 py-3 font-medium text-black"
+                className="rounded-2xl bg-white px-4 py-3 font-medium text-[#1f1600]"
               >
                 العربية
               </button>
@@ -354,7 +354,7 @@ export default function MenuPage() {
           className="fixed left-3 top-0 z-40 flex flex-col items-center animate-swing"
         >
           <div className="h-12 w-[2px] bg-amber-200/70 shadow-[0_0_12px_rgba(252,211,77,0.5)]" />
-          <div className="-mt-1 rotate-[-4deg] rounded-2xl border border-amber-200/40 bg-amber-300 px-3 py-2 text-xs font-bold text-black shadow-2xl">
+          <div className="-mt-1 rotate-[-4deg] rounded-2xl border border-amber-200/40 bg-[#D4A017]/90 backdrop-blur-md px-3 py-2 text-xs font-bold text-[#1f1600] shadow-2xl">
             {offerText}
           </div>
         </button>
@@ -407,7 +407,7 @@ export default function MenuPage() {
                 <button
                   type="submit"
                   disabled={leadLoading}
-                  className="w-full rounded-2xl bg-amber-300 px-4 py-3 font-semibold text-black"
+                  className="w-full rounded-2xl bg-[#D4A017]/90 backdrop-blur-md px-4 py-3 font-semibold text-[#1f1600]"
                 >
                   {leadLoading
                     ? language === "en"
@@ -490,7 +490,7 @@ export default function MenuPage() {
                   ))}
                 </div>
 
-                <div className="mt-4 rounded-2xl bg-amber-300 p-4 text-center font-bold text-black">
+                <div className="mt-4 rounded-2xl bg-[#D4A017]/90 backdrop-blur-md p-4 text-center font-bold text-[#1f1600]">
                   {language === "en" ? "Total" : "المجموع"}:{" "}
                   {Number(cartTotal).toLocaleString("en-US")} L.L
                 </div>
@@ -528,7 +528,7 @@ export default function MenuPage() {
                   <button
                     type="submit"
                     disabled={orderLoading}
-                    className="w-full rounded-2xl bg-amber-300 px-4 py-3 font-semibold text-black"
+                    className="w-full rounded-2xl bg-[#D4A017]/90 backdrop-blur-md px-4 py-3 font-semibold text-[#1f1600]"
                   >
                     {orderLoading
                       ? language === "en"
@@ -576,7 +576,7 @@ export default function MenuPage() {
               onClick={() => scrollToCategory(Number(category.id))}
               className={`shrink-0 rounded-full px-4 py-2 text-sm backdrop-blur-xl transition ${
                 activeCategoryId === Number(category.id)
-                  ? "bg-amber-300 text-black shadow-[0_0_18px_rgba(252,211,77,0.45)]"
+                  ? "bg-[#D4A017]/90 backdrop-blur-md text-[#1f1600] shadow-[0_0_18px_rgba(252,211,77,0.45)]"
                   : "bg-white/10 text-white hover:bg-white/20"
               }`}
             >
@@ -658,7 +658,7 @@ export default function MenuPage() {
                                 <button
                                   type="button"
                                   onClick={() => addToCart(item)}
-                                  className="mt-2 w-full rounded-xl bg-amber-300 px-3 py-2 text-sm font-semibold text-black"
+                                  className="mt-2 w-full rounded-xl bg-[#D4A017]/90 backdrop-blur-md px-3 py-2 text-sm font-semibold text-[#1f1600]"
                                 >
                                   {language === "en" ? "Order" : "اطلب"}
                                 </button>
@@ -679,7 +679,7 @@ export default function MenuPage() {
           <button
             type="button"
             onClick={() => setShowCart(true)}
-            className="fixed bottom-16 right-4 z-40 rounded-full bg-amber-300 px-4 py-3 text-sm font-bold text-black shadow-xl"
+            className="fixed bottom-16 right-4 z-40 rounded-full bg-[#D4A017]/90 backdrop-blur-md px-4 py-3 text-sm font-bold text-[#1f1600] shadow-xl"
           >
             {language === "en" ? "Cart" : "السلة"} ({cartCount})
           </button>
@@ -691,7 +691,7 @@ export default function MenuPage() {
               localStorage.removeItem("menu_language");
               setLanguage(null);
             }}
-            className="fixed bottom-4 right-4 z-40 rounded-full bg-white px-4 py-2 text-xs font-medium text-black shadow-xl"
+            className="fixed bottom-4 right-4 z-40 rounded-full bg-white px-4 py-2 text-xs font-medium text-[#1f1600] shadow-xl"
           >
             {language === "en" ? "Language" : "اللغة"}
           </button>
