@@ -33,6 +33,11 @@ type Settings = {
   offers_enabled?: boolean;
   offers_text?: string;
   offers_text_en?: string;
+  ordering_enabled?: boolean;
+};
+
+type CartItem = Product & {
+  quantity: number;
 };
 
 export default function MenuPage() {
@@ -48,6 +53,14 @@ export default function MenuPage() {
   const [leadPhone, setLeadPhone] = useState("");
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadSuccess, setLeadSuccess] = useState(false);
+
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [orderName, setOrderName] = useState("");
+  const [orderPhone, setOrderPhone] = useState("");
+  const [tableNumber, setTableNumber] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
+  const [orderLoading, setOrderLoading] = useState(false);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("menu_language") as Language | null;
@@ -154,6 +167,89 @@ export default function MenuPage() {
     }
   };
 
+  function addToCart(product: Product) {
+    const existing = cart.find((item) => Number(item.id) === Number(product.id));
+
+    if (existing) {
+      setCart(
+        cart.map((item) =>
+          Number(item.id) === Number(product.id)
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+      return;
+    }
+
+    setCart([...cart, { ...product, quantity: 1 }]);
+  }
+
+  function decreaseCart(productId: number) {
+    setCart(
+      cart
+        .map((item) =>
+          Number(item.id) === Number(productId)
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  }
+
+  function removeFromCart(productId: number) {
+    setCart(cart.filter((item) => Number(item.id) !== Number(productId)));
+  }
+
+  async function submitOrder(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (cart.length === 0) {
+      alert(language === "en" ? "Your cart is empty." : "السلة فاضية.");
+      return;
+    }
+
+    setOrderLoading(true);
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_name: orderName,
+          customer_phone: orderPhone,
+          table_number: tableNumber,
+          notes: orderNotes,
+          items: cart.map((item) => ({
+            product_id: item.id,
+            product_name: displayProductName(item),
+            quantity: item.quantity,
+            price_lbp: item.price_lbp,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to send order");
+        return;
+      }
+
+      setCart([]);
+      setShowCart(false);
+      setOrderName("");
+      setOrderPhone("");
+      setTableNumber("");
+      setOrderNotes("");
+      alert(language === "en" ? "Order sent successfully!" : "تم إرسال الطلب بنجاح!");
+    } catch (error) {
+      console.error(error);
+      alert(language === "en" ? "Something went wrong." : "صار في خطأ.");
+    } finally {
+      setOrderLoading(false);
+    }
+  }
+
   async function submitLead(e: React.FormEvent) {
     e.preventDefault();
 
@@ -211,6 +307,13 @@ export default function MenuPage() {
       : settings?.offers_text || "استفد من عروضاتنا";
 
   const offersEnabled = settings?.offers_enabled !== false;
+  const orderingEnabled = settings?.ordering_enabled === true;
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotal = cart.reduce(
+    (sum, item) => sum + Number(item.price_lbp) * item.quantity,
+    0
+  );
 
   return (
     <main dir={direction} className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -315,6 +418,128 @@ export default function MenuPage() {
                     : "إرسال"}
                 </button>
               </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showCart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-5 backdrop-blur-xl">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-2xl">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold">
+                {language === "en" ? "Your Order" : "طلبك"}
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setShowCart(false)}
+                className="rounded-full bg-white/10 px-3 py-1 text-sm"
+              >
+                X
+              </button>
+            </div>
+
+            {cart.length === 0 ? (
+              <div className="mt-5 rounded-2xl bg-black/30 p-4 text-center text-neutral-300">
+                {language === "en" ? "Cart is empty" : "السلة فاضية"}
+              </div>
+            ) : (
+              <>
+                <div className="mt-5 space-y-3">
+                  {cart.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-2xl border border-white/10 bg-black/30 p-4"
+                    >
+                      <div className="flex justify-between gap-3">
+                        <div>
+                          <p className="font-semibold">{displayProductName(item)}</p>
+                          <p className="text-sm text-amber-200">
+                            {Number(item.price_lbp).toLocaleString("en-US")} L.L
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-sm text-red-200"
+                        >
+                          {language === "en" ? "Remove" : "حذف"}
+                        </button>
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => decreaseCart(item.id)}
+                          className="h-8 w-8 rounded-full bg-white/10"
+                        >
+                          -
+                        </button>
+                        <span className="min-w-8 text-center">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => addToCart(item)}
+                          className="h-8 w-8 rounded-full bg-white/10"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-2xl bg-amber-300 p-4 text-center font-bold text-black">
+                  {language === "en" ? "Total" : "المجموع"}:{" "}
+                  {Number(cartTotal).toLocaleString("en-US")} L.L
+                </div>
+
+                <form onSubmit={submitOrder} className="mt-4 space-y-3">
+                  <input
+                    value={orderName}
+                    onChange={(e) => setOrderName(e.target.value)}
+                    placeholder={language === "en" ? "Name optional" : "الاسم اختياري"}
+                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                  />
+
+                  <input
+                    value={orderPhone}
+                    onChange={(e) => setOrderPhone(e.target.value)}
+                    placeholder={language === "en" ? "Phone optional" : "الرقم اختياري"}
+                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                  />
+
+                  <input
+                    value={tableNumber}
+                    onChange={(e) => setTableNumber(e.target.value)}
+                    placeholder={language === "en" ? "Table number optional" : "رقم الطاولة اختياري"}
+                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                  />
+
+                  <textarea
+                    value={orderNotes}
+                    onChange={(e) => setOrderNotes(e.target.value)}
+                    placeholder={language === "en" ? "Notes optional" : "ملاحظات اختيارية"}
+                    rows={3}
+                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={orderLoading}
+                    className="w-full rounded-2xl bg-amber-300 px-4 py-3 font-semibold text-black"
+                  >
+                    {orderLoading
+                      ? language === "en"
+                        ? "Sending..."
+                        : "عم نرسل..."
+                      : language === "en"
+                      ? "Send Order"
+                      : "إرسال الطلب"}
+                  </button>
+                </form>
+              </>
             )}
           </div>
         </div>
@@ -428,6 +653,16 @@ export default function MenuPage() {
                               <p className="mt-1 text-sm leading-tight text-amber-200 md:text-base">
                                 {Number(item.price_lbp).toLocaleString("en-US")} L.L
                               </p>
+
+                              {orderingEnabled && (
+                                <button
+                                  type="button"
+                                  onClick={() => addToCart(item)}
+                                  className="mt-2 w-full rounded-xl bg-amber-300 px-3 py-2 text-sm font-semibold text-black"
+                                >
+                                  {language === "en" ? "Order" : "اطلب"}
+                                </button>
+                              )}
                             </div>
                           </div>
                         );
@@ -439,6 +674,16 @@ export default function MenuPage() {
             })
           )}
         </div>
+
+        {hasLanguage && orderingEnabled && cartCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowCart(true)}
+            className="fixed bottom-16 right-4 z-40 rounded-full bg-amber-300 px-4 py-3 text-sm font-bold text-black shadow-xl"
+          >
+            {language === "en" ? "Cart" : "السلة"} ({cartCount})
+          </button>
+        )}
 
         {hasLanguage && (
           <button
