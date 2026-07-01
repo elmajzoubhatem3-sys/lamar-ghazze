@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
@@ -69,7 +69,7 @@ function SortableItem({
           className="cursor-grab rounded-xl bg-white/10 px-3 text-lg active:cursor-grabbing"
           title="Drag"
         >
-          ≡
+          â‰¡
         </button>
         <div className="flex-1">{children}</div>
       </div>
@@ -104,7 +104,7 @@ export default function AdminPage() {
   const [headerBannerUrls, setHeaderBannerUrls] = useState<string[]>([]);
 
   const [offersEnabled, setOffersEnabled] = useState(true);
-  const [offersText, setOffersText] = useState("استفد من عروضاتنا");
+  const [offersText, setOffersText] = useState("Ø§Ø³ØªÙØ¯ Ù…Ù† Ø¹Ø±ÙˆØ¶Ø§ØªÙ†Ø§");
   const [offersTextEn, setOffersTextEn] = useState("Get our latest offers");
 
   const [orderingEnabled, setOrderingEnabled] = useState(false);
@@ -177,7 +177,7 @@ export default function AdminPage() {
       setHeaderSubtitleEn(settingsData.header_subtitle_en || "");
 
       setOffersEnabled(settingsData.offers_enabled !== false);
-      setOffersText(settingsData.offers_text || "استفد من عروضاتنا");
+      setOffersText(settingsData.offers_text || "Ø§Ø³ØªÙØ¯ Ù…Ù† Ø¹Ø±ÙˆØ¶Ø§ØªÙ†Ø§");
       setOffersTextEn(settingsData.offers_text_en || "Get our latest offers");
 
       setOrderingEnabled(settingsData.ordering_enabled === true);
@@ -821,7 +821,7 @@ export default function AdminPage() {
           <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
             <h2 className="text-xl font-semibold">Categories</h2>
             <p className="mt-1 text-sm text-neutral-400">
-              Click a category to show its products. Drag the ≡ button to reorder.
+              Click a category to show its products. Drag the â‰¡ button to reorder.
             </p>
 
             <input
@@ -952,7 +952,7 @@ export default function AdminPage() {
 
           <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-2xl">
             <h2 className="text-xl font-semibold">
-              Products {selectedCategory ? `— ${selectedCategory.name}` : ""}
+              Products {selectedCategory ? `â€” ${selectedCategory.name}` : ""}
             </h2>
             <p className="mt-1 text-sm text-neutral-400">
               Only products from the selected category are shown here.
