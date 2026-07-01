@@ -1,5 +1,11 @@
-import { put } from "@vercel/blob";
+import ImageKit from "@imagekit/nodejs";
 import { NextResponse } from "next/server";
+
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
+});
 
 export async function POST(req: Request) {
   try {
@@ -10,12 +16,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const blob = await put(file.name, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const uploaded = await imagekit.upload({
+      file: buffer,
+      fileName: file.name,
+      folder: "/lamar-ghazze",
     });
 
-    return NextResponse.json({ url: blob.url });
+    return NextResponse.json({ url: uploaded.url });
   } catch (error) {
     console.error("POST /api/upload error:", error);
     return NextResponse.json(
