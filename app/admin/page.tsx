@@ -124,21 +124,30 @@ export default function AdminPage() {
     useState<File | null>(null);
 
   async function uploadFile(file: File) {
-    const formData = new FormData();
-    formData.append("file", file);
+    const authRes = await fetch("/api/upload-auth");
+    const auth = await authRes.json();
 
-    const uploadRes = await fetch("/api/upload", {
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+    uploadData.append("fileName", file.name);
+    uploadData.append("folder", "/lamar-ghazze");
+    uploadData.append("publicKey", auth.publicKey);
+    uploadData.append("signature", auth.signature);
+    uploadData.append("expire", String(auth.expire));
+    uploadData.append("token", auth.token);
+
+    const uploadRes = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
       method: "POST",
-      body: formData,
+      body: uploadData,
     });
 
-    const uploadData = await uploadRes.json();
+    const uploaded = await uploadRes.json();
 
     if (!uploadRes.ok) {
-      throw new Error(uploadData.error || "Upload failed");
+      throw new Error(uploaded.message || "Image upload failed");
     }
 
-    return uploadData.url || "";
+    return uploaded.url || "";
   }
 
   async function loadData() {
@@ -1144,3 +1153,4 @@ export default function AdminPage() {
     </main>
   );
 }
+
