@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     uploadForm.append("fileName", file.name);
     uploadForm.append("folder", "/lamar-ghazze");
 
-    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY?.trim();
+    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY?.trim().replace(/^"|"$/g, "");
 
     if (!privateKey || !privateKey.startsWith("private_")) {
       console.error("Invalid IMAGEKIT_PRIVATE_KEY");
@@ -60,3 +60,4 @@ export async function POST(req: Request) {
     );
   }
 }
+
