@@ -1,11 +1,4 @@
-import ImageKit from "imagekit";
 import { NextResponse } from "next/server";
-
-const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
-});
 
 export async function POST(req: Request) {
   try {
@@ -16,14 +9,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const uploadForm = new FormData();
+    uploadForm.append("file", file);
+    uploadForm.append("fileName", file.name);
+    uploadForm.append("folder", "/lamar-ghazze");
 
-    const uploaded = await imagekit.upload({
-      file: buffer,
-      fileName: file.name,
-      folder: "/lamar-ghazze",
+    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY!;
+
+    const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(privateKey + ":").toString("base64")}`,
+      },
+      body: uploadForm,
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("ImageKit upload error:", errorText);
+      return NextResponse.json({ error: "ImageKit upload failed" }, { status: 500 });
+    }
+
+    const uploaded = await response.json();
 
     return NextResponse.json({ url: uploaded.url });
   } catch (error) {
