@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -14,12 +14,20 @@ export async function POST(req: Request) {
     uploadForm.append("fileName", file.name);
     uploadForm.append("folder", "/lamar-ghazze");
 
-    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY!;
+    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY?.trim();
+
+if (!privateKey || !privateKey.startsWith("private_")) {
+  console.error("Invalid IMAGEKIT_PRIVATE_KEY");
+  return NextResponse.json(
+    { error: "Invalid ImageKit private key" },
+    { status: 500 }
+  );
+}
 
     const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(privateKey + ":").toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`${privateKey}:`).toString("base64")}`,
       },
       body: uploadForm,
     });
